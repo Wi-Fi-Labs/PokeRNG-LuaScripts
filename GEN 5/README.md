@@ -17,7 +17,7 @@ The main scripts for each game provided in the respective emulator folders have 
 
 ## IMPORTANT!
 * [DeSmuMe 0.9.11 x32 Dev+](https://www.mediafire.com/file/8r0rwano0ioi3nl/desmume-0.9.11-win32-dev.zip/file) version with `lua51.dll` required
-* [Bizhawk 2.9](https://github.com/TASEmulators/BizHawk/releases/tag/2.9.1) or higher required (earlier versions not supported)
+* [Bizhawk 2.9](https://github.com/TASEmulators/BizHawk/releases) or higher required (earlier versions not supported)
 
 ## BWB2W2 LCRNG Advance Bot (Chatot Chicanery) Instructions
 This script consists of a simple Bot that auto-advances a predetermined number of LCRNG (also called PIDRNG) frames.
@@ -36,3 +36,6 @@ An alternative version for Bizhawk without the screen change function, where the
 
 ### Credits
 Source repos &amp; scripts by [Real96](https://github.com/Real96/PokeLua/tree/main/Gen%204), [Unknown Warrior](https://github.com/Unknown-Warrior/LUA_Scripts) &amp; [Martmists-GH](https://github.com/Martmists-GH/PokemonOverlay)
+
+***
+[< Back to the main page](https://github.com/Wi-Fi-Labs/PokeRNG-LuaScripts)

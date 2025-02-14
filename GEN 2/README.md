@@ -100,3 +100,6 @@ Nature is based on experience points, so gaining experience points will change n
 ### Credits
 These scripts were created based on zep715's original code, by wwwwwwzx
 Source repo &amp; scripts by [wwwwwwzx](https://github.com/wwwwwwzx/gsclua/tree/master)
+
+***
+[< Back to the main page](https://github.com/Wi-Fi-Labs/PokeRNG-LuaScripts)

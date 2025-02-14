@@ -57,3 +57,6 @@ Nature is based on experience points, so gaining experience points will change n
 
 ### Credits
 Source repo &amp; unified script by [Real96](https://github.com/Real96/PokeLua/tree/main/Gen%201). Original code &amp; scripts by [zep715](https://github.com/zep715/rbylua)
+
+***
+[< Back to the main page](https://github.com/Wi-Fi-Labs/PokeRNG-LuaScripts)

@@ -53,5 +53,12 @@ After that open your game, load the script and navigate to the TID Bot Mode. Mak
 The scripts provided here for each game showcase the most varied information that you require for each type of RNG.
 * Dolphin Lua-Core version is required
 
+## Notes for mGBA scripts
+* Be sure to enlarge enough the lua window to avoid text flickering or emulation lagging
+* Every time you need to save or load a state, hold `Shift` + `(n)`/`(n)` (ex. `Shift` + `1` to save a state in slot 1 or `1` to load the state in slot 1) with game unpaused
+
 ### Credits
 Source repos [DevonStudios](https://github.com/DevonStudios/LuaScripts/tree/main/Gen%203) &amp; [Real96](https://github.com/Real96/PokeLua/tree/main/Gen%203). Scripts by Real96
+
+***
+[< Back to the main page](https://github.com/Wi-Fi-Labs/PokeRNG-LuaScripts)
