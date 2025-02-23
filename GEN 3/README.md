@@ -18,8 +18,8 @@ The main scripts for each game provided in the respective emulator folders have 
 
 ## IMPORTANT!
 * [VBA 23.6 RR 480-LRC4](https://github.com/TASEmulators/vba-rerecording/releases/tag/480LRC4) version required for VBA scripts
-* [Bizhawk 2.8 rc-1](https://github.com/TASEmulators/BizHawk/releases/tag/2.8-rc1) required - _scripts in the `Older Scripts` folder require stable [Bizhawk 2.8](https://github.com/TASEmulators/BizHawk/releases/tag/2.8) instead_ for BizHawk scripts
-* [mGBA 0.10.3](https://mgba.io/downloads.html) is required for mGBA scripts
+* [Bizhawk 2.8 rc-1](https://github.com/TASEmulators/BizHawk/releases/tag/2.8-rc1) version required for BizHawk scripts
+* [mGBA 0.10.3](https://mgba.io/downloads.html) or later is required for mGBA scripts (latest version advised)
 * [Dolphin Lua-core](https://github.com/Real96/Dolphin-Lua-Core) is required for GCN scripts
 
 ## FRLG Initial Seed Bot Instructions
