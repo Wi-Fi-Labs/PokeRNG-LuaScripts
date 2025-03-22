@@ -41,6 +41,11 @@ elseif mbyte(0x02FFFE0E) == 0x45 then -- game: Black2
 	game = "B2W2"
 end
 
+console.clear()
+ print("Original Script: Unknown Warrior")
+ print("Ported to Bizhawk by: Real.96 & SexyMalasada")
+ print("Simplifying Edit by: SexyMalasada")
+
 local runbtn = 0
 local flipbtn = -1
 

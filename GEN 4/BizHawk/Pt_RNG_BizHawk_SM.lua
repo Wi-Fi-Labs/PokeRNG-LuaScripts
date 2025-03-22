@@ -522,6 +522,9 @@ function printGameInfo()
   print("Language: Unknown language\n")
  else
   wrongGameVersion = false
+  print("Original Script: Real.96")
+  print("Layout Edit: SexyMalasada")
+  print("")
   print("Version: "..gameVersion)
   print(string.format("Language: %s\n", gameLanguage))
  end

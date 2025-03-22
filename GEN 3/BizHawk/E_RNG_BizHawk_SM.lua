@@ -424,6 +424,9 @@ elseif gameLanguage == "" then
  print("Language: Unknown language")
 else
  wrongGameVersion = false
+ print("Original Script: Real.96")
+ print("Layout Edit: SexyMalasada")
+ print("")
  print("Version: "..gameVersion)
  print("Language: "..gameLanguage)
 end
