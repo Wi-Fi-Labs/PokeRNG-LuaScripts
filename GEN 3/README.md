@@ -24,7 +24,7 @@ The main scripts for each game provided in the respective emulator folders have 
 
 ## How To Navigate The Scripts
 
-You can cycle between different pages of the lua scripts and toggle some windows on or off by pressing the corresponding number in your numbers row/number keys (_not__ NumPad!).
+You can cycle between different pages of the lua scripts and toggle some windows on or off by pressing the corresponding number in your numbers row/number keys (_not_ NumPad!).
 
 Example:
 * When you see arrows with numbers like ``<- 1-2 ->`` this means you can cycle left (1) or right (2) between pages of the lua script
