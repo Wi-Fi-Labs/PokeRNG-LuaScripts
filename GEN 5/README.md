@@ -17,7 +17,7 @@ The main scripts for each game provided in the respective emulator folders have 
 
 ## IMPORTANT!
 * [DeSmuMe 0.9.11 x32 Dev+](https://www.mediafire.com/file/8r0rwano0ioi3nl/desmume-0.9.11-win32-dev.zip/file) version with `lua51.dll` required
-* [Bizhawk 2.9](https://github.com/TASEmulators/BizHawk/releases) or higher required (earlier versions not supported)
+* [Bizhawk 2.9](https://github.com/TASEmulators/BizHawk/releases) or higher required (earlier versions not supported) - _2.11 is also not compatible!_
 
 ## BWB2W2 LCRNG Advance Bot (Chatot Chicanery) Instructions
 This script consists of a simple Bot that auto-advances a predetermined number of LCRNG (also called PIDRNG) frames.

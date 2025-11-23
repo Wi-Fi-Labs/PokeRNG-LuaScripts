@@ -1,6 +1,11 @@
 read32Bit = memory.read_u32_le
 read16Bit = memory.read_u16_le
 read8Bit = memory.readbyte
+memoryWriteCheck = event.onmemorywrite
+rshift = bit.rshift
+lshift = bit.lshift
+bxor = bit.bxor
+band = bit.band
 floor = math.floor
 sqrt = math.sqrt
 
@@ -141,63 +146,58 @@ local nationalDexList = {
  376, 377, 378, 379, 382, 383, 384, 380, 381, 385, 386, 358}
 
 local pokemonAbilities = {
- [001] = {65, 34}, [002] = {65, 34}, [003] = {65, 34}, [004] = {66}, [005] = {66}, [006] = {66}, [007] = {67, 44},
- [008] = {67, 44}, [009] = {67, 44}, [010] = {19, 50}, [011] = {61}, [012] = {14}, [013] = {19, 50}, [014] = {61},
- [015] = {68}, [016] = {51}, [017] = {51}, [018] = {51}, [019] = {50, 62, 55}, [020] = {50, 62, 55}, [021] = {51},
- [022] = {51}, [023] = {22, 61}, [024] = {22, 61}, [025] = {9, 31}, [026] = {9, 31}, [027] = {8}, [028] = {8},
- [029] = {38, 55}, [030] = {38, 55}, [031] = {38}, [032] = {38, 55}, [033] = {38, 55}, [034] = {38}, [035] = {56},
- [036] = {56}, [037] = {18, 70}, [038] = {18, 70}, [039] = {56}, [040] = {56}, [041] = {39}, [042] = {39},
- [043] = {34, 50}, [044] = {34, 1}, [045] = {34, 27}, [046] = {27, 6}, [047] = {27, 6}, [048] = {14, 50},
- [049] = {19}, [050] = {8, 71}, [051] = {8, 71}, [052] = {53}, [053] = {7}, [054] = {6, 13, 33},
- [055] = {6, 13, 33}, [056] = {72}, [057] = {72}, [058] = {22, 18}, [059] = {22, 18}, [060] = {11, 6, 33},
- [061] = {11, 6, 33}, [062] = {11, 6, 33}, [063] = {28, 39}, [064] = {28, 39}, [065] = {28, 39}, [066] = {62},
- [067] = {62}, [068] = {62}, [069] = {34}, [070] = {34}, [071] = {34}, [072] = {29, 64, 44}, [073] = {29, 64, 44},
- [074] = {69, 5, 8}, [075] = {69, 5, 8}, [076] = {69, 5, 8}, [077] = {50, 18, 49}, [078] = {50, 18, 49},
- [079] = {12, 20}, [080] = {12, 20}, [081] = {42, 5}, [082] = {42, 5}, [083] = {51, 39}, [084] = {50, 48},
- [085] = {50, 48}, [086] = {47}, [087] = {47}, [088] = {1, 60}, [089] = {1, 60}, [090] = {75}, [091] = {75},
- [092] = {26}, [093] = {26}, [094] = {26}, [095] = {69, 5}, [096] = {15, 39}, [097] = {15, 39}, [098] = {52, 75},
- [099] = {52, 75}, [100] = {43, 9}, [101] = {43, 9}, [102] = {34}, [103] = {34}, [104] = {69, 31, 4},
- [105] = {69, 31, 4}, [106] = {7}, [107] = {51, 39}, [108] = {20, 12, 13}, [109] = {26, 1}, [110] = {26, 1},
- [111] = {31, 69}, [112] = {31, 69}, [113] = {30, 32}, [114] = {34}, [115] = {48, 39}, [116] = {33, 6},
- [117] = {38, 6}, [230] = {33, 6}, [118] = {33, 41, 31}, [119] = {33, 41, 31}, [120] = {35, 30}, [121] = {35, 30},
- [122] = {43}, [123] = {68}, [212] = {68}, [238] = {12}, [124] = {12}, [239] = {9, 72}, [125] = {9, 72},
- [240] = {49, 72}, [126] = {49, 72}, [127] = {52}, [128] = {22}, [129] = {33}, [130] = {22}, [131] = {11, 75},
- [132] = {7}, [133] = {50}, [134] = {11}, [135] = {10}, [136] = {18, 62}, [196] = {28}, [197] = {28, 39},
- [137] = {36}, [233] = {36}, [138] = {33, 75}, [139] = {33, 75}, [140] = {33, 4}, [141] = {33, 4}, [142] = {69, 46},
- [143] = {17, 47}, [144] = {46}, [145] = {46, 9}, [146] = {46, 49}, [147] = {61, 63}, [148] = {61, 63}, [149] = {39},
- [150] = {46}, [151] = {28}, [152] = {65}, [153] = {65}, [154] = {65}, [155] = {66, 18}, [156] = {66, 18},
- [157] = {66, 18}, [158] = {67}, [159] = {67}, [160] = {67}, [161] = {50, 51}, [162] = {50, 51}, [163] = {15, 51},
- [164] = {15, 51}, [165] = {68, 48}, [166] = {68, 48}, [167] = {68, 15}, [168] = {68, 15}, [169] = {39},
- [170] = {10, 35, 11}, [171] = {10, 35, 11}, [172] = {9, 31}, [173] = {56}, [174] = {56}, [175] = {55, 32},
- [176] = {55, 32}, [177] = {28, 48}, [178] = {28, 48}, [179] = {9, 57}, [180] = {9, 57}, [181] = {9, 57}, [182] = {34},
- [183] = {47, 37}, [184] = {47, 37}, [185] = {5, 69}, [186] = {11, 6, 2}, [187] = {34}, [188] = {34}, [189] = {34},
- [190] = {50, 53}, [191] = {34, 48}, [192] = {34, 48}, [193] = {3, 14}, [194] = {6, 11}, [195] = {6, 11}, [198] = {15},
- [199] = {12, 20}, [200] = {26}, [201] = {26}, [202] = {23}, [203] = {39, 48}, [204] = {5}, [205] = {5},
- [206] = {32, 50}, [207] = {52, 8, 17}, [208] = {69, 5}, [209] = {22, 50}, [210] = {22}, [211] = {38, 33, 22},
- [213] = {5}, [214] = {68, 62}, [215] = {39, 51}, [216] = {53}, [217] = {62}, [218] = {40, 49}, [219] = {40, 49},
- [220] = {12, 47}, [221] = {12, 47}, [222] = {55, 30}, [223] = {55}, [224] = {21}, [225] = {72, 55, 15},
- [226] = {33, 11, 41}, [227] = {51, 5}, [228] = {48, 18}, [229] = {48, 18}, [231] = {53, 8}, [232] = {5, 8},
- [234] = {22}, [235] = {20}, [236] = {62, 72}, [237] = {22}, [241] = {47}, [242] = {30, 32}, [243] = {46, 39},
- [244] = {46, 39}, [245] = {46, 39}, [246] = {62, 8}, [247] = {61}, [248] = {45}, [249] = {46}, [250] = {46},
- [251] = {30}, [252] = {65}, [253] = {65}, [254] = {65}, [255] = {66, 3}, [256] = {66, 3}, [257] = {66, 3},
- [258] = {67, 6}, [259] = {67, 6}, [260] = {67, 6}, [261] = {50}, [262] = {22}, [263] = {53}, [264] = {53},
- [265] = {19, 50}, [266] = {61}, [267] = {68}, [268] = {61}, [269] = {19, 14}, [270] = {33, 44, 20}, [271] = {33, 44, 20},
- [272] = {33, 44, 20}, [273] = {34, 48}, [274] = {34, 48}, [275] = {34, 48}, [276] = {62}, [277] = {62}, [278] = {51, 44},
- [279] = {51, 2, 44}, [280] = {28, 36}, [281] = {28, 36}, [282] = {28, 36}, [283] = {33, 44}, [284] = {22}, [285] = {27},
- [286] = {27}, [287] = {54}, [288] = {72}, [289] = {54}, [290] = {14, 50}, [291] = {3}, [292] = {25}, [293] = {43},
- [294] = {43}, [295] = {43}, [296] = {47, 62}, [297] = {47, 62}, [298] = {47, 37}, [299] = {5, 42}, [300] = {56},
- [301] = {56}, [302] = {51}, [303] = {52, 22}, [304] = {5, 69}, [305] = {5, 69}, [306] = {5, 69}, [307] = {74},
- [308] = {74}, [309] = {9, 31, 58}, [310] = {9, 31, 58}, [311] = {57, 31}, [312] = {58, 10}, [313] = {35, 68},
- [314] = {12}, [315] = {30, 38}, [316] = {64, 60}, [317] = {64, 60}, [318] = {24, 3}, [319] = {24, 3},
- [320] = {41, 12, 46}, [321] = {41, 12, 46}, [322] = {12, 20}, [323] = {40}, [324] = {73, 70, 75}, [325] = {47, 20},
- [326] = {47, 20}, [327] = {20}, [328] = {52, 71}, [329] = {26}, [330] = {26}, [331] = {8, 11}, [332] = {8, 11},
- [333] = {30, 13}, [334] = {30, 13}, [335] = {17}, [336] = {61}, [337] = {26}, [338] = {26}, [339] = {12}, [340] = {12},
- [341] = {52, 75}, [342] = {52, 75}, [343] = {26}, [344] = {26}, [345] = {21}, [346] = {21}, [347] = {4, 33},
- [348] = {4, 33}, [349] = {33, 12}, [350] = {63, 56}, [351] = {59}, [352] = {16}, [353] = {15}, [354] = {15},
- [355] = {26}, [356] = {46}, [357] = {34}, [358] = {26}, [359] = {46}, [360] = {23}, [361] = {39}, [362] = {39},
- [363] = {47, 12}, [364] = {47, 12}, [365] = {47, 12}, [366] = {75}, [367] = {33, 41}, [368] = {33}, [369] = {33, 69, 5},
- [370] = {33}, [371] = {69}, [372] = {69}, [373] = {22}, [374] = {29}, [375] = {29}, [376] = {29}, [377] = {29, 5},
- [378] = {29}, [379] = {29}, [380] = {26}, [381] = {26}, [382] = {2}, [383] = {70}, [384] = {77}, [385] = {32}, [386] = {46}}
+ [001] = {65}, [002] = {65}, [003] = {65}, [004] = {66}, [005] = {66}, [006] = {66}, [007] = {67}, [008] = {67},
+ [009] = {67}, [010] = {19}, [011] = {61}, [012] = {14}, [013] = {19}, [014] = {61}, [015] = {68}, [016] = {51},
+ [017] = {51}, [018] = {51}, [019] = {50, 62}, [020] = {50, 62}, [021] = {51}, [022] = {51}, [023] = {22, 61},
+ [024] = {22, 61}, [025] = {9}, [026] = {9}, [027] = {8}, [028] = {8}, [029] = {38}, [030] = {38}, [031] = {38},
+ [032] = {38}, [033] = {38}, [034] = {38}, [035] = {56}, [036] = {56}, [037] = {18}, [038] = {18}, [039] = {56},
+ [040] = {56}, [041] = {39}, [042] = {39}, [043] = {34}, [044] = {34}, [045] = {34}, [046] = {27}, [047] = {27},
+ [048] = {14}, [049] = {19}, [050] = {8, 71}, [051] = {8, 71}, [052] = {53}, [053] = {7}, [054] = {6, 13},
+ [055] = {6, 13}, [056] = {72}, [057] = {72}, [058] = {22, 18}, [059] = {22, 18}, [060] = {11, 6}, [061] = {11, 6},
+ [062] = {11, 6}, [063] = {28, 39}, [064] = {28, 39}, [065] = {28, 39}, [066] = {62}, [067] = {62}, [068] = {62},
+ [069] = {34}, [070] = {34}, [071] = {34}, [072] = {29, 64}, [073] = {29, 64}, [074] = {69, 5}, [075] = {69, 5},
+ [076] = {69, 5}, [077] = {50, 18}, [078] = {50, 18}, [079] = {12, 20}, [080] = {12, 20}, [081] = {42, 5},
+ [082] = {42, 5}, [083] = {51, 39}, [084] = {50, 48}, [085] = {50, 48}, [086] = {47}, [087] = {47}, [088] = {1, 60},
+ [089] = {1, 60}, [090] = {75}, [091] = {75}, [092] = {26}, [093] = {26}, [094] = {26}, [095] = {69, 5}, [096] = {15},
+ [097] = {15}, [098] = {52, 75}, [099] = {52, 75}, [100] = {43, 9}, [101] = {43, 9}, [102] = {34}, [103] = {34},
+ [104] = {69, 31}, [105] = {69, 31}, [106] = {7}, [107] = {51}, [108] = {20, 12}, [109] = {26}, [110] = {26},
+ [111] = {31, 69}, [112] = {31, 69}, [113] = {30, 32}, [114] = {34}, [115] = {48}, [116] = {33}, [117] = {38},
+ [118] = {33, 41}, [119] = {33, 41}, [120] = {35, 30}, [121] = {35, 30}, [122] = {43}, [123] = {68}, [124] = {12},
+ [125] = {9}, [126] = {49}, [127] = {52}, [128] = {22}, [129] = {33}, [130] = {22}, [131] = {11, 75}, [132] = {7},
+ [133] = {50}, [134] = {11}, [135] = {10}, [136] = {18}, [137] = {36}, [138] = {33, 75}, [139] = {33, 75},
+ [140] = {33, 4}, [141] = {33, 4}, [142] = {69, 46}, [143] = {17, 47}, [144] = {46}, [145] = {46}, [146] = {46},
+ [147] = {61}, [148] = {61}, [149] = {39}, [150] = {46}, [151] = {28}, [152] = {65}, [153] = {65}, [154] = {65},
+ [155] = {66}, [156] = {66}, [157] = {66}, [158] = {67}, [159] = {67}, [160] = {67}, [161] = {50, 51}, [162] = {50, 51},
+ [163] = {15, 51}, [164] = {15, 51}, [165] = {68, 48}, [166] = {68, 48}, [167] = {68, 15}, [168] = {68, 15},
+ [169] = {39}, [170] = {10, 35}, [171] = {10, 35}, [172] = {9}, [173] = {56}, [174] = {56}, [175] = {55, 32},
+ [176] = {55, 32}, [177] = {28, 48}, [178] = {28, 48}, [179] = {9}, [180] = {9}, [181] = {9}, [182] = {34},
+ [183] = {47, 37}, [184] = {47, 37}, [185] = {5, 69}, [186] = {11, 6}, [187] = {34}, [188] = {34}, [189] = {34},
+ [190] = {50, 53}, [191] = {34}, [192] = {34}, [193] = {3, 14}, [194] = {6, 11}, [195] = {6, 11}, [196] = {28},
+ [197] = {28}, [198] = {15}, [199] = {12, 20}, [200] = {26}, [201] = {26}, [202] = {23}, [203] = {39, 48}, [204] = {5}, 
+ [205] = {5}, [206] = {32, 50}, [207] = {52, 8}, [208] = {69, 5}, [209] = {22, 50}, [210] = {22}, [211] = {38, 33},
+ [212] = {68}, [213] = {5}, [214] = {68, 62}, [215] = {39, 51}, [216] = {53}, [217] = {62}, [218] = {40, 49},
+ [219] = {40, 49}, [220] = {12}, [221] = {12}, [222] = {55, 30}, [223] = {55}, [224] = {21}, [225] = {72, 55},
+ [226] = {33, 11}, [227] = {51, 5}, [228] = {48, 18}, [229] = {48, 18}, [230] = {33}, [231] = {53}, [232] = {5},
+ [233] = {36}, [234] = {22}, [235] = {20}, [236] = {62}, [237] = {22}, [238] = {12}, [239] = {9}, [240] = {49},
+ [241] = {47}, [242] = {30, 32}, [243] = {46}, [244] = {46}, [245] = {46}, [246] = {62}, [247] = {61}, [248] = {45},
+ [249] = {46}, [250] = {46}, [251] = {30}, [252] = {65}, [253] = {65}, [254] = {65}, [255] = {66}, [256] = {66},
+ [257] = {66}, [258] = {67}, [259] = {67}, [260] = {67}, [261] = {50}, [262] = {22}, [263] = {53}, [264] = {53},
+ [265] = {19}, [266] = {61}, [267] = {68}, [268] = {61}, [269] = {19}, [270] = {33, 44}, [271] = {33, 44}, [272] = {33, 44},
+ [273] = {34, 48}, [274] = {34, 48}, [275] = {34, 48}, [276] = {62}, [277] = {62}, [278] = {51}, [279] = {51},
+ [280] = {28, 36}, [281] = {28, 36}, [282] = {28, 36}, [283] = {33}, [284] = {22}, [285] = {27}, [286] = {27}, [287] = {54},
+ [288] = {72}, [289] = {54}, [290] = {14}, [291] = {3}, [292] = {25}, [293] = {43}, [294] = {43}, [295] = {43},
+ [296] = {47, 62}, [297] = {47, 62}, [298] = {47, 37}, [299] = {5, 42}, [300] = {56}, [301] = {56}, [302] = {51},
+ [303] = {52, 22}, [304] = {5, 69}, [305] = {5, 69}, [306] = {5, 69}, [307] = {74}, [308] = {74}, [309] = {9, 31},
+ [310] = {9, 31}, [311] = {57}, [312] = {58}, [313] = {35, 68}, [314] = {12}, [315] = {30, 38}, [316] = {64, 60},
+ [317] = {64, 60}, [318] = {24}, [319] = {24}, [320] = {41, 12}, [321] = {41, 12}, [322] = {12}, [323] = {40}, [324] = {73},
+ [325] = {47, 20}, [326] = {47, 20}, [327] = {20}, [328] = {52, 71}, [329] = {26}, [330] = {26}, [331] = {8}, [332] = {8},
+ [333] = {30}, [334] = {30}, [335] = {17}, [336] = {61}, [337] = {26}, [338] = {26}, [339] = {12}, [340] = {12},
+ [341] = {52, 75}, [342] = {52, 75}, [343] = {26}, [344] = {26}, [345] = {21}, [346] = {21}, [347] = {4}, [348] = {4},
+ [349] = {33}, [350] = {63}, [351] = {59}, [352] = {16}, [353] = {15}, [354] = {15}, [355] = {26}, [356] = {46}, [357] = {34},
+ [358] = {26}, [359] = {46}, [360] = {23}, [361] = {39}, [362] = {39}, [363] = {47}, [364] = {47}, [365] = {47}, [366] = {75},
+ [367] = {33}, [368] = {33}, [369] = {33, 69}, [370] = {33}, [371] = {69}, [372] = {69}, [373] = {22}, [374] = {29},
+ [375] = {29}, [376] = {29}, [377] = {29}, [378] = {29}, [379] = {29}, [380] = {26}, [381] = {26}, [382] = {2}, [383] = {70},
+ [384] = {76}, [385] = {32}, [386] = {46}}
 
 local itemNamesList = {
  "None", "Master Ball", "Ultra Ball", "Great Ball", "Poke Ball", "Safari Ball", "Net Ball", "Dive Ball", "Nest Ball",
@@ -266,58 +266,69 @@ local catchRatesList = {
  45, 255, 60, 60, 25, 225, 45, 45, 45, 3, 3, 3, 3, 3, 3, 3, 3, 5, 5, 3, 3, 3}
 
 local locationNamesList = {
- "Petalburg City", "Slateport City", "Mauville City", "Rustboro City", "Fortree City", "Lilycove City",
- "Mossdeep City", "Sootopolis City", "Ever Grande City", "Littleroot Town", "Oldale Town", "Dewford Town",
- "Lavaridge Town", "Fallarbor Town", "Verdanturf Town", "Pacifidlog Town", "Route 101", "Route 102",
- "Route 103", "Route 104", "Route 105", "Route 106", "Route 107", "Route 108", "Route 109", "Route 110",
- "Route 111", "Route 112", "Route 113", "Route 114", "Route 115", "Route 116", "Route 117", "Route 118",
- "Route 119", "Route 120", "Route 121", "Route 122", "Route 123", "Route 124", "Route 125", "Route 126",
- "Route 127", "Route 128", "Route 129", "Route 130", "Route 131", "Route 132", "Route 133", "Route 134",
- "Underwater 1", "Underwater 2", "Underwater 3", "Underwater 4"}
+ "Pallet Town", "Viridian City", "Pewter City", "Cerulean City", "Lavender Town", "Vermilion City",
+ "Celadon City", "Fuchsia City", "Cinnabar Island", "Indigo Plateau Exterior", "Saffron City",
+ "Saffron City Connection", "One Island", "Two Island", "Three Island", "Four Island", "Five Island",
+ "Seven Island", "Six Island", "Route 1", "Route 2", "Route 3", "Route 4", "Route 5", "Route 6", "Route 7",
+ "Route 8", "Route 9", "Route 10", "Route 11", "Route 12", "Route 13", "Route 14", "Route 15", "Route 16",
+ "Route 17", "Route 18", "Route 19", "Route 20", "Route 21 North", "Route 21 South", "Route 22", "Route 23",
+ "Route 24", "Route 25", "One Island Kindle Road", "One Island Treasure Beach", "Two Island Cape Brink",
+ "Three Island Bond Bridge", "Three Island Port", "Prototype Sevii Isle 6", "Prototype Sevii Isle 7",
+ "Prototype Sevii Isle 8", "Prototype Sevii Isle 9", "Five Island Resort Gorgeous",
+ "Five Island Water Labyrinth", "Five Island Meadow", "Five Island Memorial Pillar",
+ "Six Island Outcast Island", "Six Island Green Path", "Six Island Water Path", "Six Island Ruin Valley",
+ "Seven Island Trainer Tower", "Seven Island Sevault Canyon Entrance", "Seven Island Sevault Canyon",
+ "Seven Island Tanoby Ruins"}
 
 local statusConditionNamesList = {"None", "SLP", "PSN", "BRN", "FRZ", "PAR", "PSN"}
 
 client.reboot_core()
 
 local gameCode = read32Bit(0x0000AC, "ROM")
-local gameVersionCode = (gameCode & 0xFFFFFF)
-local gameLanguageCode = (gameCode >> 24)
+local gameRev = read8Bit(0x0000BC, "ROM") == 0x1
+local gameVersionCode = band(gameCode, 0xFFFFFF)
+local gameLanguageCode = rshift(gameCode, 24)
 local gameVersion = ""
 local gameLanguage = ""
 local wrongGameVersion = true
 
-local mode = {"None", "Capture", "100% Catch", "Breeding", "Pandora", "Pokemon Info"}
+local mode = {"None", "Capture", "100% Catch", "Breeding", "Pandora", "InitSeed Bot", "TID Bot", "Pokemon Info"}
 local index = 1
 local prevKey = {}
 local showRngInfoText = true
 local showRoamerInfoText = false
 local showInstructionsText = false
 
-local safariCatchFactorAddr = 0x02016089
-local catchCheckFlagAddr = 0x02017810
-local pokemonStatsScreenAddr = 0x02018010
-local partySelectedSlotIndexAddr = 0x020200BA
+local catchCheckFlagAddr = 0x020054C4
+local initialSeedAddr = 0x02020000
+local pokemonStatsScreenAddr
+local pokemonStatsScreen2Addr
+local pokemonBattleStatsScreenAddr
 local speciesDexIndexAddr
 local wildTypeAddr
-local saveBlock2Addr
-local saveBlock1Addr
-local eggLowPIDAddr
-local mapTypeAddr
-local currBoxIndexAddr
-local boxSelectedSlotIndexAddr
-local selectedItemAddr
-local safariZoneStepsCounterAddr
-local roamerMapGroupAndNumAddr
-local timerAddr
-local battleTurnsCounterAddr
+local safariCatchFactorPointerAddr
 local partySlotsCounterAddr
 local partyAddr
 local wildAddr
+local playerWalkRunStateAddr
+local wildEncounterDataAddr
+local boxSelectedSlotIndexAddr
+local safariZoneStepsCounterAddr
+local eggLowPIDPointerAddr
+local roamerMapGroupAndNumAddr
+local selectedItemAddr
+local partySelectedSlotIndexAddr
+local battleTurnsCounterAddr
 local currentSeedAddr
+local saveBlock1PointerAddr
+local saveBlock2PointerAddr
+local currBoxIndexPointerAddr
 
-local initialSeed = 0
 local advances = 0
 local tempCurrentSeed = 0
+
+local encounterRateBase = 0
+local encounterRateFlag = false
 
 local ballRate = {"10", "2550", "20", "15", "10", "15", "10", "10", "10", "10", "10", "10", "10"}
 local startingCatchAdvances
@@ -328,7 +339,21 @@ local catchSkips
 local oneTimeCatchRng = true
 local currentSeed2 = nil
 
-local infoMode = {"Gift", "Party", "Stats", "Box"}
+local delay1 = 206
+local delay5 = 1470
+local delay2 = 213
+local delay4 = 470
+local delay3 = 215
+local delay6 = 2900
+local initialSeedWritten = false
+local initialSeedFound
+local botTargetInitialSeeds = {0x0, 0x0BAD, 0xDEAD, 0xBEAF, 0x0DAD, 0x1EE7, 0xFEED}  -- Input here the bot target Initial Seeds
+local botOneTime = false
+local TIDFound = false
+local botTargetTIDs = {0, 1, 1337, 8453, 8411, 11233, 11111, 22222, 33333, 44444, 55555}  -- Input here the bot target TIDs
+
+local infoMode = {
+ "Gift", "Party", "Party Stats", "Battle Party Stats", "Box", "1st Floor Box Stats", "2nd Floor Box Stats", "DayCare Box Stats"}
 local infoIndex = 1
 local prevKeyInfo = {}
 
@@ -346,69 +371,84 @@ end
 
 if gameLanguageCode == 0x45 then
  gameLanguage = "USA"
- speciesDexIndexAddr = 0x02024464
- wildTypeAddr = 0x02024AF9
- saveBlock2Addr = 0x02024EA4
- saveBlock1Addr = 0x02025734
- eggLowPIDAddr = 0x020287E8
- mapTypeAddr = 0x0202E83F
- currBoxIndexAddr = 0x020300A0
- boxSelectedSlotIndexAddr = 0x020384E5
- selectedItemAddr = 0x0203855E
- safariZoneStepsCounterAddr = 0x0203880A
- roamerMapGroupAndNumAddr = 0x02039302
- timerAddr = 0x03001790
- battleTurnsCounterAddr = 0x030042F3
- partySlotsCounterAddr = 0x03004350
- partyAddr = 0x03004360
- wildAddr = 0x030045C0
- currentSeedAddr = 0x03004818
+ pokemonStatsScreen2Addr = 0x020032A0
+ pokemonStatsScreenAddr = 0x02006498
+ pokemonBattleStatsScreenAddr = 0x020119C4
+ speciesDexIndexAddr = 0x020235C8
+ wildTypeAddr = 0x02023C5D
+ partySlotsCounterAddr = 0x02024029
+ wildAddr = 0x0202402C
+ partyAddr = 0x02024284
+ safariCatchFactorPointerAddr = 0x0202449C
+ playerWalkRunStateAddr = 0x02037078
+ wildEncounterDataAddr = 0x020386D0
+ boxSelectedSlotIndexAddr = 0x02039821
+ eggLowPIDPointerAddr = 0x02039894
+ safariZoneStepsCounterAddr = 0x02039996
+ selectedItemAddr = 0x0203AD30
+ partySelectedSlotIndexAddr = 0x0203B0A9
+ roamerMapGroupAndNumAddr = 0x0203F3AE
+ battleTurnsCounterAddr = 0x03004FA3
+ currentSeedAddr = 0x03005000
+ saveBlock1PointerAddr = 0x03005008
+ saveBlock2PointerAddr = 0x0300500C
+ currBoxIndexPointerAddr = 0x03005010
 elseif gameLanguageCode == 0x4A then  -- Check game language and set addresses
  gameLanguage = "JPN"
- speciesDexIndexAddr = 0x020241C4
- wildTypeAddr = 0x02024859
- saveBlock2Addr = 0x02024C04
- saveBlock1Addr = 0x02025494
- eggLowPIDAddr = 0x02028548
- mapTypeAddr = 0x0202E59F
- currBoxIndexAddr = 0x0202FDBC
- boxSelectedSlotIndexAddr = 0x02038201
- selectedItemAddr = 0x0203825C
- safariZoneStepsCounterAddr = 0x02038506
- roamerMapGroupAndNumAddr = 0x02038FFA
- timerAddr = 0x03001700
- battleTurnsCounterAddr = 0x03004223
- partySlotsCounterAddr = 0x03004280
- partyAddr = 0x03004290
- wildAddr = 0x030044F0
- currentSeedAddr = 0x03004748
+ pokemonStatsScreen2Addr = 0x0200324C
+ pokemonStatsScreenAddr = 0x02006410
+ pokemonBattleStatsScreenAddr = 0x02011970
+ speciesDexIndexAddr = 0x02023528
+ wildTypeAddr = 0x02023BBD
+ partySlotsCounterAddr = 0x02023F89
+ wildAddr = 0x02023F8C
+ partyAddr = 0x020241E4
+ safariCatchFactorPointerAddr = 0x02024140
+ playerWalkRunStateAddr = 0x02036FAC
+ wildEncounterDataAddr = 0x0203861C
+ boxSelectedSlotIndexAddr = 0x0203976D
+ eggLowPIDPointerAddr = 0x020397E0
+ safariZoneStepsCounterAddr = 0x0203990E
+ selectedItemAddr = 0x0203ACA8
+ partySelectedSlotIndexAddr = 0x0203B01D
+ roamerMapGroupAndNumAddr = 0x0203F322
+ battleTurnsCounterAddr = 0x03004F43
+ currentSeedAddr = gameRev and 0x03004FA0 or 0x03005040
+ saveBlock1PointerAddr = gameRev and 0x03004FA8 or 0x03005048
+ saveBlock2PointerAddr = gameRev and 0x03004FAC or 0x0300504C
+ currBoxIndexPointerAddr = gameRev and 0x03004FB0 or 0x03005050
 elseif gameLanguageCode == 0x44 or gameLanguageCode == 0x46 or gameLanguageCode == 0x49 or gameLanguageCode == 0x53 then
  gameLanguage = "EUR"
- speciesDexIndexAddr = 0x02024464
- wildTypeAddr = 0x02024AF9
- saveBlock2Addr = 0x02024EA4
- saveBlock1Addr = 0x02025734
- eggLowPIDAddr = 0x020287E8
- mapTypeAddr = 0x0202E83F
- currBoxIndexAddr = 0x020300A0
- boxSelectedSlotIndexAddr = 0x020384E5
- selectedItemAddr = 0x0203855E
- safariZoneStepsCounterAddr = 0x0203880A
- roamerMapGroupAndNumAddr = 0x02039302
- timerAddr = 0x03001790
- battleTurnsCounterAddr = 0x03004303
- partySlotsCounterAddr = 0x03004360
- partyAddr = 0x03004370
- wildAddr = 0x030045D0
- currentSeedAddr = 0x03004828
+ pokemonStatsScreen2Addr = 0x020032A0
+ pokemonStatsScreenAddr = 0x02006498
+ pokemonBattleStatsScreenAddr = 0x020119C4
+ speciesDexIndexAddr = 0x020235C8
+ wildTypeAddr = 0x02023C5D
+ partySlotsCounterAddr = 0x02024029
+ wildAddr = 0x0202402C
+ partyAddr = 0x02024284
+ safariCatchFactorPointerAddr = 0x0202449C
+ playerWalkRunStateAddr = 0x02037078
+ wildEncounterDataAddr = 0x020386D0
+ boxSelectedSlotIndexAddr = 0x02039821
+ eggLowPIDPointerAddr = 0x02039894
+ safariZoneStepsCounterAddr = 0x02039996
+ selectedItemAddr = 0x0203AD30
+ partySelectedSlotIndexAddr = 0x0203B0A9
+ roamerMapGroupAndNumAddr = 0x0203F3AE
+ battleTurnsCounterAddr = 0x03004EF3
+ currentSeedAddr = 0x03004F50
+ saveBlock1PointerAddr = 0x03004F58
+ saveBlock2PointerAddr = 0x03004F5C
+ currBoxIndexPointerAddr = 0x03004F60
 end
 
 console.clear()
 
 if gameVersion == "" then  -- Print game info
  print("Version: Unknown game")
-elseif gameVersion ~= "Ruby" and gameVersion ~= "Sapphire" then
- print("Version: "..gameVersion.." - Wrong game version! Use Ruby/Sapphire instead")
+elseif gameVersion ~= "FireRed" and gameVersion ~= "LeafGreen" then
+ print("Version: "..gameVersion.." - Wrong game version! Use FireRed/LeafGreen instead")
 elseif gameLanguage == "" then
  print("Version: "..gameVersion)
  print("Language: Unknown language")
@@ -425,14 +465,14 @@ function setBackgroundBoxes()  -- Set transparent black boxes
  gui.defaultTextBackground("clear")
  gui.defaultPixelFont("gens")
 
- if mode[index] == "None" or mode[index] == "100% Catch" or mode[index] == "Pandora" then
+ if mode[index] == "None" or mode[index] == "100% Catch" or mode[index] == "Pandora" or mode[index] == "InitSeed Bot" or mode[index] == "TID Bot" then
   gui.drawBox(0, 0, 105, 6, 0x7F000000, 0x7F000000)
  elseif mode[index] == "Capture" or mode[index] == "Breeding" or mode[index] == "Pokemon Info" then
   gui.drawBox(0, 0, 105, 6, 0x7F000000, 0x7F000000)
   gui.drawBox(0, 8, 88, 78, 0x7F000000, 0x7F000000)
  end
 
- if mode[index] ~= "None" and mode[index] ~= "100% Catch" then
+ if mode[index] ~= "None" and mode[index] ~= "100% Catch" and mode[index] ~= "InitSeed Bot" and mode[index] ~= "TID Bot" then
   gui.drawBox(205, 148, 239, 159, 0x7F000000, 0x7F000000) -- TID/SID box
  end
 end
@@ -457,10 +497,10 @@ function getInput()
 
  if (key["Number1"] or key["Keypad1"]) and (not prevKey["Number1"] and not prevKey["Keypad1"]) then
   leftArrowColor = "orange"
-  index = index - 1 < 1 and 6 or index - 1
+  index = index - 1 < 1 and 8 or index - 1
  elseif (key["Number2"] or key["Keypad2"]) and (not prevKey["Number2"] and not prevKey["Keypad2"]) then
   rightArrowColor = "orange"
-  index = index + 1 > 6 and 1 or index + 1
+  index = index + 1 > 8 and 1 or index + 1
  end
 
  prevKey = key
@@ -470,8 +510,16 @@ function getInput()
  drawArrowRight(103, 0, rightArrowColor)
 end
 
+function initialSeedWriteCheck(addr, val, flags)
+ initialSeedWritten = true
+ tempCurrentSeed = band(val, 0xFFFF)
+ advances = 0
+end
+
+memoryWriteCheck(initialSeedWriteCheck, initialSeedAddr)
+
 function LCRNG(s, mul1, mul2, sum)
- local a = mul1 * (s % 0x10000) + (s >> 16) * mul2
+ local a = mul1 * (s % 0x10000) + rshift(s, 16) * mul2
  local b = mul2 * (s % 0x10000) + (a % 0x10000) * 0x10000 + sum
  local c = b % 0x100000000
 
@@ -502,29 +550,106 @@ function calcAdvancesJump(seed)
 end
 
 function getRngInfo()
+ local initial = read16Bit(initialSeedAddr)
  local current = read32Bit(currentSeedAddr)
- local painting = read16Bit(timerAddr)
 
- if (painting == 0 and current <= 0xFFFF) or current == painting then
-  initialSeed = current
-  tempCurrentSeed = current
- end
+ advances = advances + calcAdvancesJump(current)
 
- advances = initialSeed == current and 0 or advances + calcAdvancesJump(current)
-
- userdata.set("seed", initialSeed)
  userdata.set("advances", advances)
 
- return painting, current, advances
+ return initial, current, advances
+end
+
+function getBikeMod(rate)
+ local isPlayerOnBike = band(read8Bit(playerWalkRunStateAddr), 6) ~= 0
+
+ return isPlayerOnBike and floor((rate * 80) / 100) or rate
+end
+
+function getActivedFluteType()
+ local fluteFlagsAddr = read32Bit(saveBlock1PointerAddr) + 0xFE0
+ local fluteEffectActivedFlag = read8Bit(fluteFlagsAddr)
+ local isWhiteFlute = rshift(fluteEffectActivedFlag, 3) == 1
+ local isBlackFlute = rshift(fluteEffectActivedFlag, 4) == 1
+
+ return isWhiteFlute and 1 or isBlackFlute and 2 or 0
+end
+
+function getFluteEffectMod(finalRate)
+ local activedFluteType = getActivedFluteType()
+ local isWhiteFluteActived = activedFluteType == 1
+ local isBlackFluteActived = activedFluteType == 2
+
+ return isWhiteFluteActived and finalRate + floor(finalRate / 2) or isBlackFluteActived and floor(finalRate / 2) or finalRate
+end
+
+function getCleanseTagEffectMod(finalRate)
+ local partyLeadHeldItem = read8Bit(wildEncounterDataAddr + 0xA)
+ local isPartyLeadHoldingCleanseTag = partyLeadHeldItem == 0xBE
+
+ return isPartyLeadHoldingCleanseTag and floor((finalRate * 2) / 3) or finalRate
+end
+
+function getAbilityEffectMod(finalRate)
+ local partyLeadAbilityEffectType = read8Bit(wildEncounterDataAddr + 0x9)
+
+ return partyLeadAbilityEffectType == 1 and floor(finalRate / 2) or partyLeadAbilityEffectType == 2 and finalRate * 2 or finalRate
+end
+
+function getEncounterCheckValue(seed)
+ return rshift(seed, 16) % 0x640
+end
+
+function getEncounterMissingSteps(rate, rateBuff, rateBase)
+ local wildEncounterSeed = read32Bit(wildEncounterDataAddr)
+ local isEncounterStep = false
+ local missingSteps = 0
+ local finalRate = 0
+
+ while isEncounterStep == false do
+  wildEncounterSeed = LCRNG(wildEncounterSeed, 0x41C6, 0x4E6D, 0x3039)
+  rateBuff = rateBuff + rateBase
+  finalRate = rate + floor((16 * rateBuff) / 200)
+  finalRate = getFluteEffectMod(finalRate)
+  finalRate = getCleanseTagEffectMod(finalRate)
+  finalRate = getAbilityEffectMod(finalRate)
+
+  isEncounterStep = getEncounterCheckValue(wildEncounterSeed) < (finalRate > 1600 and 1600 or finalRate)
+  missingSteps = missingSteps + 1
+ end
+
+ return missingSteps
+end
+
+function showEncounterMissingSteps()
+ local encounterRateBuff = read16Bit(wildEncounterDataAddr + 0x6)
+
+ if encounterRateBuff == 0 then
+  encounterRateFlag = false
+ elseif not encounterRateFlag then
+  encounterRateBase = encounterRateBuff
+  encounterRateFlag = true
+ end
+
+ encounterRate = 16 * encounterRateBase
+ encounterRate = getBikeMod(encounterRate)
+
+ encounterMissingSteps = encounterRateBuff == 0 and 0 or getEncounterMissingSteps(encounterRate, encounterRateBuff, encounterRateBase)
+
+ gui.drawBox(0, 134, 94, 139, 0x7F000000, 0x7F000000)
+ gui.text(1, 402, "Steps for Wild Encounter: "..encounterMissingSteps)
 end
 
 function showRngInfo()
- local paintingSeed, currentSeed, currentAdvances = getRngInfo()
+ local initialSeed, currentSeed, currentAdvances = getRngInfo()
 
- if showRngInfoText and mode[index] ~= "None" and mode[index] ~= "100% Catch" then
-  gui.drawBox(0, 136, 80, 159, 0x7F000000, 0x7F000000)
-  gui.text(1, 408, string.format("Initial Seed: %04X", initialSeed))
-  gui.text(1, 426, string.format("Painting Timer: %08X", paintingSeed))
+ if showRngInfoText and mode[index] ~= "None" and mode[index] ~= "100% Catch" and mode[index] ~= "InitSeed Bot" and mode[index] ~= "TID Bot" then
+  if mode[index] == "Capture" then
+   showEncounterMissingSteps()
+  end
+
+  gui.drawBox(0, 142, 73, 159, 0x7F000000, 0x7F000000)
+  gui.text(1, 426, string.format("Initial Seed: %04X", initialSeed))
   gui.text(1, 444, string.format("Current Seed: %08X", currentSeed))
   gui.text(1, 462, "Advances: "..currentAdvances)
  end
@@ -553,10 +678,10 @@ function getRngInfoInput()
 end
 
 function getTrainerIDs()
- local trainerIDsAddr = saveBlock2Addr + 0xA
+ local trainerIDsAddr = read32Bit(saveBlock2PointerAddr) + 0xA
  local trainerIDs = read32Bit(trainerIDsAddr)
- local TID = (trainerIDs & 0xFFFF)
- local SID = (trainerIDs >> 16)
+ local TID = band(trainerIDs, 0xFFFF)
+ local SID = rshift(trainerIDs, 16)
 
  return TID, SID
 end
@@ -571,7 +696,7 @@ end
 function getInstructionsInput()
  local key = input.get()
 
- if mode[index] == "100% Catch" then
+ if mode[index] == "100% Catch" or mode[index] == "InitSeed Bot" or mode[index] == "TID Bot" then
   if key["Number3"] or key["Keypad3"] then
    showInstructionsText = true
   elseif key["Number4"] or key["Keypad4"] then
@@ -593,6 +718,28 @@ function getInstructionsInput()
   gui.text(1, 132, "7) Load the save state and advance frames until counter becomes 0")
   gui.text(1, 150, "8) Unpause the game while holding A")
   gui.text(1, 176, "Note: the delay may be unstable, be sure to check -1 or +1")
+ elseif mode[index] == "InitSeed Bot" and showInstructionsText then
+  gui.text(508, 1, "4 - Hide Instructions")
+  gui.drawBox(0, 8, 154, 67, 0x7F000000, 0x7F000000)
+  gui.text(1, 24, "1) Pause the game")
+  gui.text(1, 42, "2) Reboot the core")
+  gui.text(1, 60, "3) Advance a single frame (F) + holding 1")
+  gui.text(1, 78, "4) Advance a single frame (F)")
+  gui.text(1, 96, "5) Advance a single frame (F) + holding 1")
+  gui.text(1, 114, "6) Advance a single frame (F)")
+  gui.text(1, 132, "7) Advance a single frame (F) + holding 1")
+  gui.text(1, 150, "8) Advance a single frame (F)")
+  gui.text(1, 168, "9) Advance a single frame (F) + holding SELECT")
+  gui.text(1, 186, "10) Unpause the game")
+ elseif mode[index] == "TID Bot" and showInstructionsText then
+  gui.text(508, 1, "4 - Hide Instructions")
+  gui.drawBox(0, 8, 151, 43, 0x7F000000, 0x7F000000)
+  gui.text(1, 24, "1) Go to the name selection screen")
+  gui.text(1, 42, "2) Insert the name you want")
+  gui.text(1, 60, "3) Place the cursor over 'END'")
+  gui.text(1, 78, "4) Pause the game")
+  gui.text(1, 96, "5) Advance a single frame (F) + holding START")
+  gui.text(1, 114, "6) Unpause the game")
  elseif not showInstructionsText then
   gui.text(508, 1, "3 - Show Instructions")
  else
@@ -605,8 +752,8 @@ end
 
 function getPokemonIDs(addr)
  local pokemonIDs = read32Bit(addr + 0x4)
- local TID = (pokemonIDs & 0xFFFF)
- local SID = (pokemonIDs >> 16)
+ local TID = band(pokemonIDs, 0xFFFF)
+ local SID = rshift(pokemonIDs, 16)
 
  return TID, SID
 end
@@ -622,9 +769,9 @@ function shinyCheck(PID, addr)
   trainerTID, trainerSID = getTrainerIDs()
  end
 
- local highPID = (PID >> 16)
- local lowPID = (PID & 0xFFFF)
- local shinyTypeValue = ((trainerSID ~ trainerTID) ~ (lowPID ~ highPID))
+ local highPID = rshift(PID, 16)
+ local lowPID = band(PID, 0xFFFF)
+ local shinyTypeValue = bxor(bxor(trainerSID, trainerTID), bxor(lowPID, highPID))
 
  if shinyTypeValue < 8 then
   return "limegreen", shinyTypeValue == 0 and " (Square)" or " (Star)"
@@ -655,12 +802,12 @@ function getIVColor(value)
 end
 
 function getIVs(ivsValue)
- local hp = (ivsValue & 0x1F)
- local atk = (ivsValue & (0x1F * 0x20)) / 0x20
- local def = (ivsValue & (0x1F * 0x400)) / 0x400
- local spAtk = (ivsValue & (0x1F * 0x100000)) / 0x100000
- local spDef = (ivsValue & (0x1F * 0x2000000)) / 0x2000000
- local spd = (ivsValue & (0x1F * 0x8000)) / 0x8000
+ local hp = band(ivsValue, 0x1F)
+ local atk = band(ivsValue, 0x1F * 0x20) / 0x20
+ local def = band(ivsValue, 0x1F * 0x400) / 0x400
+ local spAtk = band(ivsValue, 0x1F * 0x100000) / 0x100000
+ local spDef = band(ivsValue, 0x1F * 0x2000000) / 0x2000000
+ local spd = band(ivsValue, 0x1F * 0x8000) / 0x8000
 
  return hp, atk, def, spAtk, spDef, spd
 end
@@ -668,8 +815,8 @@ end
 function getHPTypeAndPower(hp, atk, def, spAtk, spDef, spd)
  local hpType = floor((((hp % 2) + (2 * (atk % 2)) + (4 * (def % 2)) + (8 * (spd % 2)) + (16 * (spAtk % 2))
                 + (32 * (spDef % 2))) * 15) / 63)
- local hpPower = floor(((((hp & 2) / 2 + (atk & 2) + 2 * (def & 2) + 4 * (spd & 2) + 8 * (spAtk & 2)
-                 + 16 * (spDef & 2)) * 40) / 63) + 30)
+ local hpPower = floor((((band(hp, 2) / 2 + band(atk, 2) + 2 * band(def, 2) + 4 * band(spd, 2) + 8 * band(spAtk, 2)
+                 + 16 * band(spDef, 2)) * 40) / 63) + 30)
 
  return hpType, hpPower
 end
@@ -696,10 +843,10 @@ function showIVsAndHP(ivsValue, isRoamer)
 end
 
 function getMoves(value1, value2)
- local move1 = (value1 & 0xFFF)
- local move2 = (value1 >> 16)
- local move3 = (value2 & 0xFFF)
- local move4 = (value2 >> 16)
+ local move1 = band(value1, 0xFFF)
+ local move2 = rshift(value1, 16)
+ local move3 = band(value2, 0xFFF)
+ local move4 = rshift(value2, 16)
 
  return move1, move2, move3, move4
 end
@@ -724,10 +871,10 @@ function getPPColor(value)
 end
 
 function getPP(value)
- local PP1 = (value & 0xFF)
- local PP2 = ((value >> 8) & 0xFF)
- local PP3 = ((value >> 16) & 0xFF)
- local PP4 = (value >> 24)
+ local PP1 = band(value, 0xFF)
+ local PP2 = band(rshift(value, 8), 0xFF)
+ local PP3 = band(rshift(value, 16), 0xFF)
+ local PP4 = rshift(value, 24)
 
  return PP1, PP2, PP3, PP4
 end
@@ -751,25 +898,25 @@ function showInfo(addr)
  local natureIndex = pokemonPID % 25
  local pokemonIDs = read32Bit(addr + 0x4)
  local orderIndex = (pokemonPID % 24) + 1
- local decryptionKey = (pokemonPID ~ pokemonIDs)
+ local decryptionKey = bxor(pokemonPID, pokemonIDs)
  local growthOffset = getOffset("growth", orderIndex)
  local attacksOffset = getOffset("attack", orderIndex)
  local miscOffset = getOffset("misc", orderIndex)
 
- local ivsAndAbilityValue = (read32Bit(addr + 0x20 + miscOffset + 0x4) ~ decryptionKey)
- local speciesAndItemValue = (read32Bit(addr + 0x20 + growthOffset) ~ decryptionKey)
- local movesValue1 = (read32Bit(addr + 0x20 + attacksOffset) ~ decryptionKey)
- local movesValue2 = (read32Bit(addr + 0x20 + attacksOffset + 0x4) ~ decryptionKey)
- local PPValue = (read32Bit(addr + 0x20 + attacksOffset + 0x8) ~ decryptionKey)
+ local ivsAndAbilityValue = bxor(read32Bit(addr + 0x20 + miscOffset + 0x4), decryptionKey)
+ local speciesAndItemValue = bxor(read32Bit(addr + 0x20 + growthOffset), decryptionKey)
+ local movesValue1 = bxor(read32Bit(addr + 0x20 + attacksOffset), decryptionKey)
+ local movesValue2 = bxor(read32Bit(addr + 0x20 + attacksOffset + 0x4), decryptionKey)
+ local PPValue = bxor(read32Bit(addr + 0x20 + attacksOffset + 0x8), decryptionKey)
 
- local speciesDexIndex = (speciesAndItemValue & 0xFFFF)
+ local speciesDexIndex = band(speciesAndItemValue, 0xFFFF)
  local speciesDexNumber = nationalDexList[speciesDexIndex + 1]
  local speciesName = speciesNamesList[speciesDexNumber]
 
- local itemIndex = (speciesAndItemValue >> 16)
+ local itemIndex = rshift(speciesAndItemValue, 16)
  local itemName = itemNamesList[itemIndex + 1]
 
- local abilityNumber = (ivsAndAbilityValue >> 0x1F) + 1
+ local abilityNumber = rshift(ivsAndAbilityValue, 0x1F) + 1
  local abilityName = abilityNamesList[pokemonAbilities[(speciesDexNumber ~= nil and speciesDexNumber < 387) and speciesDexNumber or 1]
                                                       [abilityNumber]]
 
@@ -810,8 +957,8 @@ function getRoamerInput()
 end
 
 function getRoamerInfo()
- local roamerAddr = saveBlock1Addr + 0x3144
- local roamerIVsValue = (read32Bit(roamerAddr) & 0xFF)
+ local roamerAddr = read32Bit(saveBlock1PointerAddr) + 0x30D0
+ local roamerIVsValue = band(read32Bit(roamerAddr), 0xFF)
  local roamerPID = read32Bit(roamerAddr + 0x4)
  local roamerShinyTypeTextColor, roamerShinyType = shinyCheck(roamerPID)
  local roamerNatureIndex = roamerPID % 25
@@ -824,8 +971,8 @@ function getRoamerInfo()
  local roamerStatus = statusConditionNamesList[1]  -- No altered status condition
 
  local roamerMapGroupAndNum = read16Bit(roamerMapGroupAndNumAddr)
- local roamerMapIndex = (roamerMapGroupAndNum >> 8)
- local playerMapGroupAndNumAddr = saveBlock1Addr + 0x4
+ local roamerMapIndex = rshift(roamerMapGroupAndNum, 8)
+ local playerMapGroupAndNumAddr = read32Bit(saveBlock1PointerAddr) + 0x4
  local playerMapGroupAndNum = read16Bit(playerMapGroupAndNumAddr)
 
  if roamerStatusIndex > 0 and roamerStatusIndex < 0x8 then  -- Sleep
@@ -946,6 +1093,7 @@ end
 
 function getCatchRate(speciesDexNumber, isSafariZone)
  if isSafariZone then
+  local safariCatchFactorAddr = read32Bit(safariCatchFactorPointerAddr) + 0x7C
   local safariCatchFactor = read8Bit(safariCatchFactorAddr)
 
   return floor((1275 * safariCatchFactor) / 100)
@@ -967,19 +1115,18 @@ function getBonusBall(speciesDexNumber, isSafariZone)
    local wildType1 = read8Bit(wildTypeAddr)
    local wildType2 = read8Bit(wildTypeAddr + 0x1)
    ballRate[7] = (wildType1 == 0x0B or wildType2 == 0x0B or wildType1 == 0x06 or wildType2 == 0x06) and 30 or 10
-  elseif ballIndex == 8 then  -- Dive ball catch rate
-   local isUnderWaterBattle = read8Bit(mapTypeAddr) == 0x5
-   ballRate[8] = isUnderWaterBattle and 35 or 10
   elseif ballIndex == 9 then  -- Nest ball catch rate
    local level = read8Bit(wildAddr + 0x54)
    ballRate[9] = level < 30 and 40 - level or 10
   elseif ballIndex == 10 then  -- Repeat ball catch rate
-   local dexMask = (1 << (speciesDexNumber - 1) % 8)
+   local saveBlock1Addr = read32Bit(saveBlock1PointerAddr)
+   local saveBlock2Addr = read32Bit(saveBlock2PointerAddr)
+   local dexMask = lshift(1, (speciesDexNumber - 1) % 8)
    local dexIndex = (speciesDexNumber - 1) / 8
-   local dexOwnedFlag = (read8Bit(saveBlock2Addr + 0x28 + dexIndex) & dexMask)
-   local dexSeenFlag = (read8Bit(saveBlock2Addr + 0x5C + dexIndex) & dexMask)
-   local dexSeen1Flag = (read8Bit(saveBlock1Addr + 0x938 + dexIndex) & dexMask)
-   local dexSeen2Flag = (read8Bit(saveBlock1Addr + 0x3A8C + dexIndex) & dexMask)
+   local dexOwnedFlag = band(read8Bit(saveBlock2Addr + 0x28 + dexIndex), dexMask)
+   local dexSeenFlag = band(read8Bit(saveBlock2Addr + 0x5C + dexIndex), dexMask)
+   local dexSeen1Flag = band(read8Bit(saveBlock1Addr + 0x5F8 + dexIndex), dexMask)
+   local dexSeen2Flag = band(read8Bit(saveBlock1Addr + 0x3A18 + dexIndex), dexMask)
    local isCatchedPokemon = dexOwnedFlag == dexSeenFlag and dexOwnedFlag == dexSeen1Flag and dexOwnedFlag == dexSeen2Flag
    ballRate[10] = isCatchedPokemon and 30 or 10
   elseif ballIndex == 11 then  -- Timer ball catch rate, bonusBall is x4 if battle turns are >= 30
@@ -1028,7 +1175,7 @@ function findSureCatch(seed, catchProbability, isSafariZone)
  while ballShakes ~= 4 do
   ballShakes = 0
 
-  while (seed >> 16) < catchProbability and ballShakes < 4 do
+  while rshift(seed, 16) < catchProbability and ballShakes < 4 do
    ballShakes = ballShakes + 1
    seed = LCRNG(seed, 0x41C6, 0x4E6D, 0x6073)
   end
@@ -1066,15 +1213,16 @@ function catchRng()
 end
 
 function getDayCareInfo()
+ local eggLowPIDAddr = read32Bit(eggLowPIDPointerAddr) + 0x2CE0
  local eggStepsCounter = 255 - read8Bit(eggLowPIDAddr - 0x4)
- local eggFlagAddr = saveBlock1Addr + 0x1230
- local isEggReady = ((read8Bit(eggFlagAddr) >> 6) & 0x1) == 1
+ local eggFlagAddr = read32Bit(saveBlock1PointerAddr) + 0xF2C
+ local isEggReady = band(rshift(read8Bit(eggFlagAddr), 6), 0x1) == 1
 
- return isEggReady, eggStepsCounter
+ return isEggReady, eggStepsCounter, eggLowPIDAddr
 end
 
 function showDayCareInfo()
- local isEggReady, eggStepsCounter = getDayCareInfo()
+ local isEggReady, eggStepsCounter, eggLowPIDAddr = getDayCareInfo()
 
  gui.drawBox(142, 0, 239, 18, 0x7F000000, 0x7F000000)
 
@@ -1110,6 +1258,182 @@ function showPartyEggInfo()
  end
 end
 
+function advanceToDelay(delay, slot)
+ slot = slot or nil
+
+ while emu.framecount() ~= delay do
+  emu.frameadvance()
+ end
+
+ if slot ~= nil then
+  savestate.saveslot(slot)
+  joypad.set({A = true})
+ end
+end
+
+function isInitialSeedFound()
+ local initial = read32Bit(initialSeedAddr)
+
+ for i = 1, table.getn(botTargetInitialSeeds) do
+  if initial == botTargetInitialSeeds[i] then
+   return true
+  end
+ end
+
+ return false
+end
+
+function initialSeedBotLoop()
+ initialSeedWritten = false
+ initialSeedFound = false
+ botOneTime = false
+
+ while delay1 ~= delay5 and not initialSeedFound do
+  while delay2 ~= delay4 and not initialSeedFound do
+   while delay3 ~= delay6 and not initialSeedFound do
+    savestate.saveslot(0)
+    joypad.set({A = true})
+    local i = 0
+
+    while not initialSeedWritten and i < 130 do
+     emu.frameadvance()
+     i = i + 1
+    end
+
+    if initialSeedWritten then
+     --print(string.format("%04X", read16Bit(initialSeedAddr)))
+     initialSeedFound = isInitialSeedFound()
+    end
+
+    if not initialSeedFound then
+     delay3 = delay3 + 1
+     initialSeedWritten = false
+     savestate.loadslot(0)
+     emu.frameadvance()
+    else
+     break
+    end
+   end
+
+   if not initialSeedFound then
+    savestate.loadslot(9)
+    delay2 = delay2 + 1
+    delay3 = delay2 + 2
+    delay4 = delay2 + 255
+    delay6 = delay3 + 1785
+    advanceToDelay(delay2, 2)
+    advanceToDelay(delay3)
+   end
+  end
+
+  if not initialSeedFound then
+   savestate.loadslot(8)
+   delay1 = delay1 + 1
+   delay2 = delay1 + 7
+   delay3 = delay2 + 2
+   delay4 = delay2 + 255
+   delay6 = delay3 + 1785
+   advanceToDelay(delay1, 1)
+   advanceToDelay(delay2, 2)
+   advanceToDelay(delay3)
+  end
+ end
+end
+
+function showFoundinitialSeed()
+ local initial = read32Bit(initialSeedAddr)
+
+ if initialSeedFound then
+  gui.drawBox(0, 100, 60, 111, 0x7F000000, 0x7F000000)
+  gui.text(1, 302, "Found!")
+  gui.text(1, 320, string.format("Initial Seed: %04X", initial))
+
+  if not botOneTime then
+   client.pause()
+   botOneTime = true
+  end
+ end
+end
+
+function initialSeedBot()
+ local key = joypad.get()
+
+ if key.Select then
+  advanceToDelay(delay1, 8)
+  advanceToDelay(delay2, 9)
+  advanceToDelay(delay3)
+  initialSeedBotLoop()
+ end
+
+ showFoundinitialSeed()
+end
+
+function isTIDFound()
+ local TID = read32Bit(initialSeedAddr)
+
+ for i = 1, table.getn(botTargetTIDs) do
+  if TID == botTargetTIDs[i] then
+   return true
+  end
+ end
+
+ return false
+end
+
+function TIDBotLoop()
+ initialSeedWritten = false
+ botOneTime = false
+
+ while not TIDFound do
+  savestate.save(0)
+  joypad.set({A = true})
+  local i = 0
+
+  while not initialSeedWritten and i < 40 do
+   emu.frameadvance()
+   i = i + 1
+  end
+
+  if initialSeedWritten then
+   --print(read16Bit(initialSeedAddr))
+   TIDFound = isTIDFound()
+  end
+
+  if not TIDFound then
+   initialSeedWritten = false
+   savestate.load(0)
+   emu.frameadvance()
+  else
+   break
+  end
+ end
+end
+
+function showFoundTID()
+ local TID = read32Bit(initialSeedAddr)
+
+ if TIDFound then
+  gui.drawBox(0, 100, 34, 111, 0x7F000000, 0x7F000000)
+  gui.text(1, 302, "Found!")
+  gui.text(1, 320, "TID: "..TID)
+
+  if not botOneTime then
+   client.pause()
+   botOneTime = true
+  end
+ end
+end
+
+function TIDBot()
+ local key = joypad.get()
+
+ if key.Start then
+  TIDBotLoop()
+ end
+
+ showFoundTID()
+end
+
 function getInfoInput()
  local key = input.get()
 
@@ -1118,18 +1442,19 @@ function getInfoInput()
 
  if (key["Number3"] or key["Keypad3"]) and (not prevKeyInfo["Number3"] and not prevKeyInfo["Keypad3"]) then
   leftInfoArrowColor = "orange"
-  infoIndex = infoIndex - 1 < 1 and 4 or infoIndex - 1
+  infoIndex = infoIndex - 1 < 1 and 8 or infoIndex - 1
  elseif (key["Number4"] or key["Keypad4"]) and (not prevKeyInfo["Number4"] and not prevKeyInfo["Keypad4"]) then
   rightInfoArrowColor = "orange"
-  infoIndex = infoIndex + 1 > 4 and 1 or infoIndex + 1
+  infoIndex = infoIndex + 1 > 8 and 1 or infoIndex + 1
  end
 
  prevKeyInfo = key
  gui.drawBox(155, 0, 239, 6, 0x7F000000, 0x7F000000)
+ gui.drawBox(201, 7, 239, 12, 0x7F000000, 0x7F000000)
  gui.text(468, 1, "Mode: "..infoMode[infoIndex])
- drawArrowLeft(202, 0, leftInfoArrowColor)
- gui.text(638, 1, "3 - 4")
- drawArrowRight(238, 0, rightInfoArrowColor)
+ drawArrowLeft(202, 6, leftInfoArrowColor)
+ gui.text(638, 21, "3 - 4")
+ drawArrowRight(238, 6, rightInfoArrowColor)
 end
 
 function showPokemonIDs(addr)
@@ -1147,13 +1472,13 @@ function showPokemonInfo()
   showInfo(lastPartySlotAddr)
   showPokemonIDs(lastPartySlotAddr)
  elseif infoMode[infoIndex] == "Party" then
-  local partySlotsCounter = read8Bit(partySlotsCounterAddr) - 1
-  local partySelectedSlotIndex = read8Bit(partySelectedSlotIndexAddr + (partySlotsCounter * 0x88))
+  local partySelectedSlotIndex = read8Bit(partySelectedSlotIndexAddr)
   local partySelectedPokemonAddr = partyAddr + (partySelectedSlotIndex * 0x64)
 
   showInfo(partySelectedPokemonAddr)
   showPokemonIDs(partySelectedPokemonAddr)
  elseif infoMode[infoIndex] == "Box" then
+  local currBoxIndexAddr = read32Bit(currBoxIndexPointerAddr)
   local currBoxIndex = read8Bit(currBoxIndexAddr)
   local boxAddr = currBoxIndexAddr + 0x4
   local boxSelectedSlotIndex = read8Bit(boxSelectedSlotIndexAddr)
@@ -1161,14 +1486,21 @@ function showPokemonInfo()
 
   showInfo(boxSelectedPokemonAddr)
   showPokemonIDs(boxSelectedPokemonAddr)
- elseif infoMode[infoIndex] == "Stats" then
+ elseif infoMode[infoIndex] == "Battle Party Stats" then
+  showInfo(pokemonBattleStatsScreenAddr)
+  showPokemonIDs(pokemonBattleStatsScreenAddr)
+ elseif infoMode[infoIndex] == "1st Floor Box Stats" then
   showInfo(pokemonStatsScreenAddr)
   showPokemonIDs(pokemonStatsScreenAddr)
+ elseif infoMode[infoIndex] == "Party Stats" or infoMode[infoIndex] == "2nd Floor Box Stats"
+        or infoMode[infoIndex] == "DayCare Box Stats"
+ then
+  showInfo(pokemonStatsScreen2Addr)
+  showPokemonIDs(pokemonStatsScreen2Addr)
  end
 end
 
 function setSaveStateValues()
- initialSeed = userdata.get("seed")
  tempCurrentSeed = userdata.get("temp")
  advances = userdata.get("advances")
 end
@@ -1180,13 +1512,13 @@ while not wrongGameVersion do
  getInput()
  showRngInfo()
 
- if mode[index] ~= "None" and mode[index] ~= "100% Catch" then
+ if mode[index] ~= "None" and mode[index] ~= "100% Catch" and mode[index] ~= "InitSeed Bot" and mode[index] ~= "TID Bot" then
   getRngInfoInput()
 
   if mode[index] ~= "Pokemon Info" then
    showTrainerIDs()
   end
- elseif mode[index] == "100% Catch" then
+ elseif mode[index] == "100% Catch" or mode[index] == "InitSeed Bot" or mode[index] == "TID Bot" then
   getInstructionsInput()
  end
 
@@ -1202,6 +1534,10 @@ while not wrongGameVersion do
  elseif mode[index] == "Breeding" then
   showDayCareInfo()
   showPartyEggInfo()
+ elseif mode[index] == "InitSeed Bot" then
+  initialSeedBot()
+ elseif mode[index] == "TID Bot" then
+  TIDBot()
  elseif mode[index] == "Pokemon Info" then
   getInfoInput()
   showPokemonInfo()

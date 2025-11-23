@@ -18,7 +18,7 @@ The main scripts for each game provided in the respective emulator folders have 
 
 ## IMPORTANT!
 * [VBA 23.6 RR 480-LRC4](https://github.com/TASEmulators/vba-rerecording/releases/tag/480LRC4) version required for VBA scripts
-* [Bizhawk 2.8 rc-1](https://github.com/TASEmulators/BizHawk/releases/tag/2.8-rc1) version required for BizHawk scripts
+* [Bizhawk 2.9](https://github.com/TASEmulators/BizHawk/releases) or higher required (earlier versions not supported) for BizHawk scripts. _([Bizhawk 2.8 rc-1](https://github.com/TASEmulators/BizHawk/releases/tag/2.8-rc1) for scripts in the 'Archive' folders)__
 * [mGBA 0.10.3](https://mgba.io/downloads.html) or later is required for mGBA scripts (latest version advised)
 * [Dolphin Lua-core](https://github.com/Real96/Dolphin-Lua-Core) is required for GCN scripts
 
@@ -58,7 +58,7 @@ The scripts provided here for each game showcase the most varied information tha
 * Every time you need to save or load a state, hold `Shift` + `(n)`/`(n)` (ex. `Shift` + `1` to save a state in slot 1 or `1` to load the state in slot 1) with game unpaused
 
 ### Credits
-Source repos [DevonStudios](https://github.com/DevonStudios/LuaScripts/tree/main/Gen%203) &amp; [Real96](https://github.com/Real96/PokeLua/tree/main/Gen%203). Scripts by Real96
+Source repos [DevonStudios](https://github.com/DevonStudios/LuaScripts/tree/main/Gen%203) &amp; [Real96](https://github.com/Real96/PokeLua/tree/main/Gen%203). Scripts by Real96 with BH scripts updated/ported over to BH 2.9+ by [Lego](https://github.com/LegoFigure11) & [Unknown Warrior](https://github.com/Unknown-Warrior)
 
 ***
 [< Back to the main page](https://github.com/Wi-Fi-Labs/PokeRNG-LuaScripts)

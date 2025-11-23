@@ -2,10 +2,7 @@ read32Bit = memory.read_u32_le
 read16Bit = memory.read_u16_le
 read8Bit = memory.readbyte
 memoryWriteCheck = event.onmemorywrite
-rshift = bit.rshift
-lshift = bit.lshift
-bxor = bit.bxor
-band = bit.band
+
 floor = math.floor
 sqrt = math.sqrt
 
@@ -286,8 +283,8 @@ client.reboot_core()
 
 local gameCode = read32Bit(0x0000AC, "ROM")
 local gameRev = read8Bit(0x0000BC, "ROM") == 0x1
-local gameVersionCode = band(gameCode, 0xFFFFFF)
-local gameLanguageCode = rshift(gameCode, 24)
+local gameVersionCode = (gameCode & 0xFFFFFF)
+local gameLanguageCode = (gameCode >> 24)
 local gameVersion = ""
 local gameLanguage = ""
 local wrongGameVersion = true
@@ -512,14 +509,14 @@ end
 
 function initialSeedWriteCheck(addr, val, flags)
  initialSeedWritten = true
- tempCurrentSeed = band(val, 0xFFFF)
+ tempCurrentSeed = (val & 0xFFFF)
  advances = 0
 end
 
 memoryWriteCheck(initialSeedWriteCheck, initialSeedAddr)
 
 function LCRNG(s, mul1, mul2, sum)
- local a = mul1 * (s % 0x10000) + rshift(s, 16) * mul2
+ local a = mul1 * (s % 0x10000) + (s >> 16) * mul2
  local b = mul2 * (s % 0x10000) + (a % 0x10000) * 0x10000 + sum
  local c = b % 0x100000000
 
@@ -561,7 +558,7 @@ function getRngInfo()
 end
 
 function getBikeMod(rate)
- local isPlayerOnBike = band(read8Bit(playerWalkRunStateAddr), 6) ~= 0
+ local isPlayerOnBike = (read8Bit(playerWalkRunStateAddr) & 6) ~= 0
 
  return isPlayerOnBike and floor((rate * 80) / 100) or rate
 end
@@ -569,8 +566,8 @@ end
 function getActivedFluteType()
  local fluteFlagsAddr = read32Bit(saveBlock1PointerAddr) + 0xFE0
  local fluteEffectActivedFlag = read8Bit(fluteFlagsAddr)
- local isWhiteFlute = rshift(fluteEffectActivedFlag, 3) == 1
- local isBlackFlute = rshift(fluteEffectActivedFlag, 4) == 1
+ local isWhiteFlute = (fluteEffectActivedFlag >> 3) == 1
+ local isBlackFlute = (fluteEffectActivedFlag >> 4) == 1
 
  return isWhiteFlute and 1 or isBlackFlute and 2 or 0
 end
@@ -597,7 +594,7 @@ function getAbilityEffectMod(finalRate)
 end
 
 function getEncounterCheckValue(seed)
- return rshift(seed, 16) % 0x640
+ return (seed >> 16) % 0x640
 end
 
 function getEncounterMissingSteps(rate, rateBuff, rateBase)
@@ -680,8 +677,8 @@ end
 function getTrainerIDs()
  local trainerIDsAddr = read32Bit(saveBlock2PointerAddr) + 0xA
  local trainerIDs = read32Bit(trainerIDsAddr)
- local TID = band(trainerIDs, 0xFFFF)
- local SID = rshift(trainerIDs, 16)
+ local TID = (trainerIDs & 0xFFFF)
+ local SID = (trainerIDs >> 16)
 
  return TID, SID
 end
@@ -752,8 +749,8 @@ end
 
 function getPokemonIDs(addr)
  local pokemonIDs = read32Bit(addr + 0x4)
- local TID = band(pokemonIDs, 0xFFFF)
- local SID = rshift(pokemonIDs, 16)
+ local TID = (pokemonIDs & 0xFFFF)
+ local SID = (pokemonIDs >> 16)
 
  return TID, SID
 end
@@ -769,9 +766,9 @@ function shinyCheck(PID, addr)
   trainerTID, trainerSID = getTrainerIDs()
  end
 
- local highPID = rshift(PID, 16)
- local lowPID = band(PID, 0xFFFF)
- local shinyTypeValue = bxor(bxor(trainerSID, trainerTID), bxor(lowPID, highPID))
+ local highPID = (PID >> 16)
+ local lowPID = (PID & 0xFFFF)
+ local shinyTypeValue = ((trainerSID ~ trainerTID) ~ (lowPID ~ highPID))
 
  if shinyTypeValue < 8 then
   return "limegreen", shinyTypeValue == 0 and " (Square)" or " (Star)"
@@ -802,12 +799,12 @@ function getIVColor(value)
 end
 
 function getIVs(ivsValue)
- local hp = band(ivsValue, 0x1F)
- local atk = band(ivsValue, 0x1F * 0x20) / 0x20
- local def = band(ivsValue, 0x1F * 0x400) / 0x400
- local spAtk = band(ivsValue, 0x1F * 0x100000) / 0x100000
- local spDef = band(ivsValue, 0x1F * 0x2000000) / 0x2000000
- local spd = band(ivsValue, 0x1F * 0x8000) / 0x8000
+ local hp = (ivsValue & 0x1F)
+ local atk = (ivsValue & (0x1F * 0x20)) / 0x20
+ local def = (ivsValue & (0x1F * 0x400)) / 0x400
+ local spAtk = (ivsValue & (0x1F * 0x100000)) / 0x100000
+ local spDef = (ivsValue & (0x1F * 0x2000000)) / 0x2000000
+ local spd = (ivsValue & (0x1F * 0x8000)) / 0x8000
 
  return hp, atk, def, spAtk, spDef, spd
 end
@@ -815,8 +812,8 @@ end
 function getHPTypeAndPower(hp, atk, def, spAtk, spDef, spd)
  local hpType = floor((((hp % 2) + (2 * (atk % 2)) + (4 * (def % 2)) + (8 * (spd % 2)) + (16 * (spAtk % 2))
                 + (32 * (spDef % 2))) * 15) / 63)
- local hpPower = floor((((band(hp, 2) / 2 + band(atk, 2) + 2 * band(def, 2) + 4 * band(spd, 2) + 8 * band(spAtk, 2)
-                 + 16 * band(spDef, 2)) * 40) / 63) + 30)
+ local hpPower = floor(((((hp & 2) / 2 + (atk & 2) + 2 * (def & 2) + 4 * (spd & 2) + 8 * (spAtk & 2)
+                 + 16 * (spDef & 2)) * 40) / 63) + 30)
 
  return hpType, hpPower
 end
@@ -843,10 +840,10 @@ function showIVsAndHP(ivsValue, isRoamer)
 end
 
 function getMoves(value1, value2)
- local move1 = band(value1, 0xFFF)
- local move2 = rshift(value1, 16)
- local move3 = band(value2, 0xFFF)
- local move4 = rshift(value2, 16)
+ local move1 = (value1 & 0xFFF)
+ local move2 = (value1 >> 16)
+ local move3 = (value2 & 0xFFF)
+ local move4 = (value2 >> 16)
 
  return move1, move2, move3, move4
 end
@@ -871,10 +868,10 @@ function getPPColor(value)
 end
 
 function getPP(value)
- local PP1 = band(value, 0xFF)
- local PP2 = band(rshift(value, 8), 0xFF)
- local PP3 = band(rshift(value, 16), 0xFF)
- local PP4 = rshift(value, 24)
+ local PP1 = (value & 0xFF)
+ local PP2 = ((value >> 8) & 0xFF)
+ local PP3 = ((value >> 16) & 0xFF)
+ local PP4 = (value >> 24)
 
  return PP1, PP2, PP3, PP4
 end
@@ -898,25 +895,25 @@ function showInfo(addr)
  local natureIndex = pokemonPID % 25
  local pokemonIDs = read32Bit(addr + 0x4)
  local orderIndex = (pokemonPID % 24) + 1
- local decryptionKey = bxor(pokemonPID, pokemonIDs)
+ local decryptionKey = (pokemonPID ~ pokemonIDs)
  local growthOffset = getOffset("growth", orderIndex)
  local attacksOffset = getOffset("attack", orderIndex)
  local miscOffset = getOffset("misc", orderIndex)
 
- local ivsAndAbilityValue = bxor(read32Bit(addr + 0x20 + miscOffset + 0x4), decryptionKey)
- local speciesAndItemValue = bxor(read32Bit(addr + 0x20 + growthOffset), decryptionKey)
- local movesValue1 = bxor(read32Bit(addr + 0x20 + attacksOffset), decryptionKey)
- local movesValue2 = bxor(read32Bit(addr + 0x20 + attacksOffset + 0x4), decryptionKey)
- local PPValue = bxor(read32Bit(addr + 0x20 + attacksOffset + 0x8), decryptionKey)
+ local ivsAndAbilityValue = (read32Bit(addr + 0x20 + miscOffset + 0x4) ~ decryptionKey)
+ local speciesAndItemValue = (read32Bit(addr + 0x20 + growthOffset) ~ decryptionKey)
+ local movesValue1 = (read32Bit(addr + 0x20 + attacksOffset) ~ decryptionKey)
+ local movesValue2 = (read32Bit(addr + 0x20 + attacksOffset + 0x4) ~ decryptionKey)
+ local PPValue = (read32Bit(addr + 0x20 + attacksOffset + 0x8) ~ decryptionKey)
 
- local speciesDexIndex = band(speciesAndItemValue, 0xFFFF)
+ local speciesDexIndex = (speciesAndItemValue & 0xFFFF)
  local speciesDexNumber = nationalDexList[speciesDexIndex + 1]
  local speciesName = speciesNamesList[speciesDexNumber]
 
- local itemIndex = rshift(speciesAndItemValue, 16)
+ local itemIndex = (speciesAndItemValue >> 16)
  local itemName = itemNamesList[itemIndex + 1]
 
- local abilityNumber = rshift(ivsAndAbilityValue, 0x1F) + 1
+ local abilityNumber = (ivsAndAbilityValue >> 0x1F) + 1
  local abilityName = abilityNamesList[pokemonAbilities[(speciesDexNumber ~= nil and speciesDexNumber < 387) and speciesDexNumber or 1]
                                                       [abilityNumber]]
 
@@ -958,7 +955,7 @@ end
 
 function getRoamerInfo()
  local roamerAddr = read32Bit(saveBlock1PointerAddr) + 0x30D0
- local roamerIVsValue = band(read32Bit(roamerAddr), 0xFF)
+ local roamerIVsValue = (read32Bit(roamerAddr) & 0xFF)
  local roamerPID = read32Bit(roamerAddr + 0x4)
  local roamerShinyTypeTextColor, roamerShinyType = shinyCheck(roamerPID)
  local roamerNatureIndex = roamerPID % 25
@@ -971,7 +968,7 @@ function getRoamerInfo()
  local roamerStatus = statusConditionNamesList[1]  -- No altered status condition
 
  local roamerMapGroupAndNum = read16Bit(roamerMapGroupAndNumAddr)
- local roamerMapIndex = rshift(roamerMapGroupAndNum, 8)
+ local roamerMapIndex = (roamerMapGroupAndNum >> 8)
  local playerMapGroupAndNumAddr = read32Bit(saveBlock1PointerAddr) + 0x4
  local playerMapGroupAndNum = read16Bit(playerMapGroupAndNumAddr)
 
@@ -1121,12 +1118,12 @@ function getBonusBall(speciesDexNumber, isSafariZone)
   elseif ballIndex == 10 then  -- Repeat ball catch rate
    local saveBlock1Addr = read32Bit(saveBlock1PointerAddr)
    local saveBlock2Addr = read32Bit(saveBlock2PointerAddr)
-   local dexMask = lshift(1, (speciesDexNumber - 1) % 8)
+   local dexMask = (1 << (speciesDexNumber - 1) % 8)
    local dexIndex = (speciesDexNumber - 1) / 8
-   local dexOwnedFlag = band(read8Bit(saveBlock2Addr + 0x28 + dexIndex), dexMask)
-   local dexSeenFlag = band(read8Bit(saveBlock2Addr + 0x5C + dexIndex), dexMask)
-   local dexSeen1Flag = band(read8Bit(saveBlock1Addr + 0x5F8 + dexIndex), dexMask)
-   local dexSeen2Flag = band(read8Bit(saveBlock1Addr + 0x3A18 + dexIndex), dexMask)
+   local dexOwnedFlag = (read8Bit(saveBlock2Addr + 0x28 + dexIndex) & dexMask)
+   local dexSeenFlag = (read8Bit(saveBlock2Addr + 0x5C + dexIndex) & dexMask)
+   local dexSeen1Flag = (read8Bit(saveBlock1Addr + 0x5F8 + dexIndex) & dexMask)
+   local dexSeen2Flag = (read8Bit(saveBlock1Addr + 0x3A18 + dexIndex) & dexMask)
    local isCatchedPokemon = dexOwnedFlag == dexSeenFlag and dexOwnedFlag == dexSeen1Flag and dexOwnedFlag == dexSeen2Flag
    ballRate[10] = isCatchedPokemon and 30 or 10
   elseif ballIndex == 11 then  -- Timer ball catch rate, bonusBall is x4 if battle turns are >= 30
@@ -1175,7 +1172,7 @@ function findSureCatch(seed, catchProbability, isSafariZone)
  while ballShakes ~= 4 do
   ballShakes = 0
 
-  while rshift(seed, 16) < catchProbability and ballShakes < 4 do
+  while (seed >> 16) < catchProbability and ballShakes < 4 do
    ballShakes = ballShakes + 1
    seed = LCRNG(seed, 0x41C6, 0x4E6D, 0x6073)
   end
@@ -1216,7 +1213,7 @@ function getDayCareInfo()
  local eggLowPIDAddr = read32Bit(eggLowPIDPointerAddr) + 0x2CE0
  local eggStepsCounter = 255 - read8Bit(eggLowPIDAddr - 0x4)
  local eggFlagAddr = read32Bit(saveBlock1PointerAddr) + 0xF2C
- local isEggReady = band(rshift(read8Bit(eggFlagAddr), 6), 0x1) == 1
+ local isEggReady = ((read8Bit(eggFlagAddr) >> 6) & 0x1) == 1
 
  return isEggReady, eggStepsCounter, eggLowPIDAddr
 end

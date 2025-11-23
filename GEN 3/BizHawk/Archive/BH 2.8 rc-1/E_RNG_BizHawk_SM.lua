@@ -1,6 +1,11 @@
 read32Bit = memory.read_u32_le
 read16Bit = memory.read_u16_le
 read8Bit = memory.readbyte
+memoryWriteCheck = event.onmemorywrite
+rshift = bit.rshift
+lshift = bit.lshift
+bxor = bit.bxor
+band = bit.band
 floor = math.floor
 sqrt = math.sqrt
 
@@ -273,51 +278,57 @@ local locationNamesList = {
  "Route 111", "Route 112", "Route 113", "Route 114", "Route 115", "Route 116", "Route 117", "Route 118",
  "Route 119", "Route 120", "Route 121", "Route 122", "Route 123", "Route 124", "Route 125", "Route 126",
  "Route 127", "Route 128", "Route 129", "Route 130", "Route 131", "Route 132", "Route 133", "Route 134",
- "Underwater 1", "Underwater 2", "Underwater 3", "Underwater 4"}
+ "Underwater Route124", "Underwater Route126", "Underwater Route 127", "Underwater Route 128",
+ "Underwater Route 129", "Underwater Route 105", "Underwater Route 125"}
 
 local statusConditionNamesList = {"None", "SLP", "PSN", "BRN", "FRZ", "PAR", "PSN"}
 
 client.reboot_core()
 
 local gameCode = read32Bit(0x0000AC, "ROM")
-local gameVersionCode = (gameCode & 0xFFFFFF)
-local gameLanguageCode = (gameCode >> 24)
+local gameVersionCode = band(gameCode, 0xFFFFFF)
+local gameLanguageCode = rshift(gameCode, 24)
 local gameVersion = ""
 local gameLanguage = ""
 local wrongGameVersion = true
 
-local mode = {"None", "Capture", "100% Catch", "Breeding", "Pandora", "Pokemon Info"}
+local mode = {"None", "Capture", "100% Catch", "Breeding", "Pandora", "TID Bot", "Pokemon Info"}
 local index = 1
 local prevKey = {}
 local showRngInfoText = true
 local showRoamerInfoText = false
 local showInstructionsText = false
 
-local safariCatchFactorAddr = 0x02016089
-local catchCheckFlagAddr = 0x02017810
-local pokemonStatsScreenAddr = 0x02018010
-local partySelectedSlotIndexAddr = 0x020200BA
+local pokemonStatsScreen2Addr = 0x0200001C
+local catchCheckFlagAddr = 0x0200558C
+local pokemonBattleStatsScreenAddr = 0x0200E808
+local initialSeedAddr = 0x02020000
+local pokemonStatsScreenAddr
 local speciesDexIndexAddr
 local wildTypeAddr
-local saveBlock2Addr
-local saveBlock1Addr
-local eggLowPIDAddr
-local mapTypeAddr
-local currBoxIndexAddr
-local boxSelectedSlotIndexAddr
-local selectedItemAddr
-local safariZoneStepsCounterAddr
-local roamerMapGroupAndNumAddr
-local timerAddr
-local battleTurnsCounterAddr
+local safariCatchFactorPointerAddr
 local partySlotsCounterAddr
 local partyAddr
 local wildAddr
+local advancesAddr
+local mapTypeAddr
+local boxSelectedSlotIndexAddr
+local safariZoneStepsCounterAddr
+local battleVideoSeed1Addr
+local eggPIDPointerAddr
+local roamerMapGroupAndNumAddr
+local battleVideoSeed2Addr
+local selectedItemAddr
+local partySelectedSlotIndexAddr
+local timerAddr
+local battleTurnsCounterAddr
 local currentSeedAddr
+local saveBlock1PointerAddr
+local saveBlock2PointerAddr
+local currBoxIndexPointerAddr
 
 local initialSeed = 0
-local advances = 0
-local tempCurrentSeed = 0
+local adjustAdvances = 0
 
 local ballRate = {"10", "2550", "20", "15", "10", "15", "10", "10", "10", "10", "10", "10", "10"}
 local startingCatchAdvances
@@ -328,7 +339,13 @@ local catchSkips
 local oneTimeCatchRng = true
 local currentSeed2 = nil
 
-local infoMode = {"Gift", "Party", "Stats", "Box"}
+local initialSeedWritten = false
+local botOneTime = false
+local TIDFound = false
+local botTargetTIDs = {0, 1, 1337, 8453, 8411, 11233, 11111, 22222, 33333, 44444, 55555}  -- Input here the bot target TIDs
+
+local infoMode = {
+ "Gift", "Party", "Party Stats", "Battle Party Stats", "Box", "1st Floor Box Stats", "2nd Floor Box Stats", "DayCare Box Stats"}
 local infoIndex = 1
 local prevKeyInfo = {}
 
@@ -344,71 +361,64 @@ elseif gameVersionCode == 0x525042 then
  gameVersion = "FireRed"
 end
 
-if gameLanguageCode == 0x45 then
- gameLanguage = "USA"
- speciesDexIndexAddr = 0x02024464
- wildTypeAddr = 0x02024AF9
- saveBlock2Addr = 0x02024EA4
- saveBlock1Addr = 0x02025734
- eggLowPIDAddr = 0x020287E8
- mapTypeAddr = 0x0202E83F
- currBoxIndexAddr = 0x020300A0
- boxSelectedSlotIndexAddr = 0x020384E5
- selectedItemAddr = 0x0203855E
- safariZoneStepsCounterAddr = 0x0203880A
- roamerMapGroupAndNumAddr = 0x02039302
- timerAddr = 0x03001790
- battleTurnsCounterAddr = 0x030042F3
- partySlotsCounterAddr = 0x03004350
- partyAddr = 0x03004360
- wildAddr = 0x030045C0
- currentSeedAddr = 0x03004818
-elseif gameLanguageCode == 0x4A then  -- Check game language and set addresses
+if gameLanguageCode == 0x4A then  -- Check game language and set addresses
  gameLanguage = "JPN"
- speciesDexIndexAddr = 0x020241C4
- wildTypeAddr = 0x02024859
- saveBlock2Addr = 0x02024C04
- saveBlock1Addr = 0x02025494
- eggLowPIDAddr = 0x02028548
- mapTypeAddr = 0x0202E59F
- currBoxIndexAddr = 0x0202FDBC
- boxSelectedSlotIndexAddr = 0x02038201
- selectedItemAddr = 0x0203825C
- safariZoneStepsCounterAddr = 0x02038506
- roamerMapGroupAndNumAddr = 0x02038FFA
- timerAddr = 0x03001700
- battleTurnsCounterAddr = 0x03004223
- partySlotsCounterAddr = 0x03004280
- partyAddr = 0x03004290
- wildAddr = 0x030044F0
- currentSeedAddr = 0x03004748
-elseif gameLanguageCode == 0x44 or gameLanguageCode == 0x46 or gameLanguageCode == 0x49 or gameLanguageCode == 0x53 then
- gameLanguage = "EUR"
- speciesDexIndexAddr = 0x02024464
- wildTypeAddr = 0x02024AF9
- saveBlock2Addr = 0x02024EA4
- saveBlock1Addr = 0x02025734
- eggLowPIDAddr = 0x020287E8
- mapTypeAddr = 0x0202E83F
- currBoxIndexAddr = 0x020300A0
- boxSelectedSlotIndexAddr = 0x020384E5
- selectedItemAddr = 0x0203855E
- safariZoneStepsCounterAddr = 0x0203880A
- roamerMapGroupAndNumAddr = 0x02039302
- timerAddr = 0x03001790
- battleTurnsCounterAddr = 0x03004303
- partySlotsCounterAddr = 0x03004360
- partyAddr = 0x03004370
- wildAddr = 0x030045D0
- currentSeedAddr = 0x03004828
+ pokemonStatsScreenAddr = 0x02002FE0
+ speciesDexIndexAddr = 0x0202370C
+ wildTypeAddr = 0x02023DA1
+ safariCatchFactorPointerAddr = 0x02024140
+ partySlotsCounterAddr = 0x0202418D
+ partyAddr = 0x02024190
+ wildAddr = 0x020243E8
+ advancesAddr = 0x02024664
+ mapTypeAddr = 0x02036FCF
+ boxSelectedSlotIndexAddr = 0x02039A19
+ safariZoneStepsCounterAddr = 0x02039D1A
+ battleVideoSeed1Addr = 0x0203AD74
+ eggPIDPointerAddr = 0x0203B944
+ roamerMapGroupAndNumAddr = 0x0203B952
+ battleVideoSeed2Addr = 0x0203B9F8
+ selectedItemAddr = 0x0203CB48
+ partySelectedSlotIndexAddr = 0x0203CB9D
+ timerAddr = 0x03002384
+ battleTurnsCounterAddr = 0x03005A83
+ currentSeedAddr = 0x03005AE0
+ saveBlock1PointerAddr = 0x03005AEC
+ saveBlock2PointerAddr = 0x03005AF0
+ currBoxIndexPointerAddr = 0x03005AF4
+elseif (gameLanguageCode >= 0x44 and gameLanguageCode <= 0x46) or gameLanguageCode == 0x49 or gameLanguageCode == 0x53 then
+ gameLanguage = "EUR/USA"
+ pokemonStatsScreenAddr = 0x020032A8
+ speciesDexIndexAddr = 0x02023A68
+ wildTypeAddr = 0x020240FD
+ safariCatchFactorPointerAddr = 0x0202449C
+ partySlotsCounterAddr = 0x020244E9
+ partyAddr = 0x020244EC
+ wildAddr = 0x02024744
+ advancesAddr = 0x020249C0
+ mapTypeAddr = 0x0203732F
+ boxSelectedSlotIndexAddr = 0x02039D79
+ safariZoneStepsCounterAddr = 0x0203A04E
+ battleVideoSeed1Addr = 0x0203B0A8
+ eggPIDPointerAddr = 0x0203BC78
+ roamerMapGroupAndNumAddr = 0x0203BC86
+ battleVideoSeed2Addr = 0x0203BD2C
+ selectedItemAddr = 0x0203CE7C
+ partySelectedSlotIndexAddr = 0x0203CED1
+ timerAddr = 0x030022E4
+ battleTurnsCounterAddr = 0x03005D23
+ currentSeedAddr = 0x03005D80
+ saveBlock1PointerAddr = 0x03005D8C
+ saveBlock2PointerAddr = 0x03005D90
+ currBoxIndexPointerAddr = 0x03005D94
 end
 
 console.clear()
 
 if gameVersion == "" then  -- Print game info
  print("Version: Unknown game")
-elseif gameVersion ~= "Ruby" and gameVersion ~= "Sapphire" then
- print("Version: "..gameVersion.." - Wrong game version! Use Ruby/Sapphire instead")
+elseif gameVersion ~= "Emerald" then
+ print("Version: "..gameVersion.." - Wrong game version! Use Emerald instead")
 elseif gameLanguage == "" then
  print("Version: "..gameVersion)
  print("Language: Unknown language")
@@ -425,14 +435,14 @@ function setBackgroundBoxes()  -- Set transparent black boxes
  gui.defaultTextBackground("clear")
  gui.defaultPixelFont("gens")
 
- if mode[index] == "None" or mode[index] == "100% Catch" or mode[index] == "Pandora" then
+ if mode[index] == "None" or mode[index] == "100% Catch" or mode[index] == "Pandora" or mode[index] == "TID Bot" then
   gui.drawBox(0, 0, 105, 6, 0x7F000000, 0x7F000000)
  elseif mode[index] == "Capture" or mode[index] == "Breeding" or mode[index] == "Pokemon Info" then
   gui.drawBox(0, 0, 105, 6, 0x7F000000, 0x7F000000)
   gui.drawBox(0, 8, 88, 78, 0x7F000000, 0x7F000000)
  end
 
- if mode[index] ~= "None" and mode[index] ~= "100% Catch" then
+ if mode[index] ~= "None" and mode[index] ~= "100% Catch" and mode[index] ~= "TID Bot" then
   gui.drawBox(205, 148, 239, 159, 0x7F000000, 0x7F000000) -- TID/SID box
  end
 end
@@ -457,10 +467,10 @@ function getInput()
 
  if (key["Number1"] or key["Keypad1"]) and (not prevKey["Number1"] and not prevKey["Keypad1"]) then
   leftArrowColor = "orange"
-  index = index - 1 < 1 and 6 or index - 1
+  index = index - 1 < 1 and 7 or index - 1
  elseif (key["Number2"] or key["Keypad2"]) and (not prevKey["Number2"] and not prevKey["Keypad2"]) then
   rightArrowColor = "orange"
-  index = index + 1 > 6 and 1 or index + 1
+  index = index + 1 > 7 and 1 or index + 1
  end
 
  prevKey = key
@@ -470,60 +480,40 @@ function getInput()
  drawArrowRight(103, 0, rightArrowColor)
 end
 
-function LCRNG(s, mul1, mul2, sum)
- local a = mul1 * (s % 0x10000) + (s >> 16) * mul2
- local b = mul2 * (s % 0x10000) + (a % 0x10000) * 0x10000 + sum
- local c = b % 0x100000000
-
- return c
-end
-
-function calcAdvancesJump(seed)
- local advancesJump = 0
-
- if tempCurrentSeed ~= seed then
-  local tempCurrentSeed2 = tempCurrentSeed
-
-  while tempCurrentSeed ~= seed and tempCurrentSeed2 ~= seed do
-   tempCurrentSeed = LCRNG(tempCurrentSeed, 0x41C6, 0x4E6D, 0x6073)  -- LCRNG next
-   tempCurrentSeed2 = LCRNG(tempCurrentSeed2, 0xEEB9, 0xEB65, 0x0A3561A1)  -- LCRNG back
-   advancesJump = advancesJump + 1
-  end
-
-  if tempCurrentSeed2 == seed then
-   advancesJump = (-1) * advancesJump
-   tempCurrentSeed = tempCurrentSeed2
-  end
- end
-
- userdata.set("temp", tempCurrentSeed)
-
- return advancesJump
-end
-
 function getRngInfo()
+ local battle1 = read32Bit(battleVideoSeed1Addr)
+ local battle2 = read32Bit(battleVideoSeed2Addr)
  local current = read32Bit(currentSeedAddr)
  local painting = read16Bit(timerAddr)
+ local initial = read16Bit(initialSeedAddr)
 
- if (painting == 0 and current <= 0xFFFF) or current == painting then
-  initialSeed = current
-  tempCurrentSeed = current
+ if (battle1 == battle2 and current == battle1) or current == painting or current == initial then
+  adjustAdvances = read32Bit(advancesAddr)
+
+  if battle1 == battle2 and current == battle1 then
+   initialSeed = battle1
+  elseif current == painting then
+   initialSeed = painting
+  else
+   initialSeed = initial
+  end
  end
 
- advances = initialSeed == current and 0 or advances + calcAdvancesJump(current)
+ local advances = read32Bit(advancesAddr) - adjustAdvances
 
  userdata.set("seed", initialSeed)
- userdata.set("advances", advances)
+ userdata.set("advances", adjustAdvances)
 
- return painting, current, advances
+ return battle1, painting, current, advances
 end
 
 function showRngInfo()
- local paintingSeed, currentSeed, currentAdvances = getRngInfo()
+ local battleVideoSeed, paintingSeed, currentSeed, currentAdvances = getRngInfo()
 
- if showRngInfoText and mode[index] ~= "None" and mode[index] ~= "100% Catch" then
-  gui.drawBox(0, 136, 80, 159, 0x7F000000, 0x7F000000)
-  gui.text(1, 408, string.format("Initial Seed: %04X", initialSeed))
+ if showRngInfoText and mode[index] ~= "None" and mode[index] ~= "100% Catch" and mode[index] ~= "TID Bot" then
+  gui.drawBox(0, 130, 90, 159, 0x7F000000, 0x7F000000)
+  gui.text(1, 390, string.format("Initial Seed: %04X", initialSeed))
+  gui.text(1, 408, string.format("Battle Video Seed: %08X", battleVideoSeed))
   gui.text(1, 426, string.format("Painting Timer: %08X", paintingSeed))
   gui.text(1, 444, string.format("Current Seed: %08X", currentSeed))
   gui.text(1, 462, "Advances: "..currentAdvances)
@@ -553,10 +543,10 @@ function getRngInfoInput()
 end
 
 function getTrainerIDs()
- local trainerIDsAddr = saveBlock2Addr + 0xA
+ local trainerIDsAddr = read32Bit(saveBlock2PointerAddr) + 0xA
  local trainerIDs = read32Bit(trainerIDsAddr)
- local TID = (trainerIDs & 0xFFFF)
- local SID = (trainerIDs >> 16)
+ local TID = band(trainerIDs, 0xFFFF)
+ local SID = rshift(trainerIDs, 16)
 
  return TID, SID
 end
@@ -571,7 +561,7 @@ end
 function getInstructionsInput()
  local key = input.get()
 
- if mode[index] == "100% Catch" then
+ if mode[index] == "100% Catch" or mode[index] == "TID Bot" then
   if key["Number3"] or key["Keypad3"] then
    showInstructionsText = true
   elseif key["Number4"] or key["Keypad4"] then
@@ -593,6 +583,15 @@ function getInstructionsInput()
   gui.text(1, 132, "7) Load the save state and advance frames until counter becomes 0")
   gui.text(1, 150, "8) Unpause the game while holding A")
   gui.text(1, 176, "Note: the delay may be unstable, be sure to check -1 or +1")
+ elseif mode[index] == "TID Bot" and showInstructionsText then
+  gui.text(508, 1, "4 - Hide Instructions")
+  gui.drawBox(0, 8, 151, 43, 0x7F000000, 0x7F000000)
+  gui.text(1, 24, "1) Go to the name selection screen")
+  gui.text(1, 42, "2) Insert the name you want")
+  gui.text(1, 60, "3) Place the cursor over 'END'")
+  gui.text(1, 78, "4) Pause the game")
+  gui.text(1, 96, "5) Advance a single frame (F) + holding START")
+  gui.text(1, 114, "6) Unpause the game")
  elseif not showInstructionsText then
   gui.text(508, 1, "3 - Show Instructions")
  else
@@ -605,8 +604,8 @@ end
 
 function getPokemonIDs(addr)
  local pokemonIDs = read32Bit(addr + 0x4)
- local TID = (pokemonIDs & 0xFFFF)
- local SID = (pokemonIDs >> 16)
+ local TID = band(pokemonIDs, 0xFFFF)
+ local SID = rshift(pokemonIDs, 16)
 
  return TID, SID
 end
@@ -622,9 +621,9 @@ function shinyCheck(PID, addr)
   trainerTID, trainerSID = getTrainerIDs()
  end
 
- local highPID = (PID >> 16)
- local lowPID = (PID & 0xFFFF)
- local shinyTypeValue = ((trainerSID ~ trainerTID) ~ (lowPID ~ highPID))
+ local highPID = rshift(PID, 16)
+ local lowPID = band(PID, 0xFFFF)
+ local shinyTypeValue = bxor(bxor(trainerSID, trainerTID), bxor(lowPID, highPID))
 
  if shinyTypeValue < 8 then
   return "limegreen", shinyTypeValue == 0 and " (Square)" or " (Star)"
@@ -655,12 +654,12 @@ function getIVColor(value)
 end
 
 function getIVs(ivsValue)
- local hp = (ivsValue & 0x1F)
- local atk = (ivsValue & (0x1F * 0x20)) / 0x20
- local def = (ivsValue & (0x1F * 0x400)) / 0x400
- local spAtk = (ivsValue & (0x1F * 0x100000)) / 0x100000
- local spDef = (ivsValue & (0x1F * 0x2000000)) / 0x2000000
- local spd = (ivsValue & (0x1F * 0x8000)) / 0x8000
+ local hp = band(ivsValue, 0x1F)
+ local atk = band(ivsValue, 0x1F * 0x20) / 0x20
+ local def = band(ivsValue, 0x1F * 0x400) / 0x400
+ local spAtk = band(ivsValue, 0x1F * 0x100000) / 0x100000
+ local spDef = band(ivsValue, 0x1F * 0x2000000) / 0x2000000
+ local spd = band(ivsValue, 0x1F * 0x8000) / 0x8000
 
  return hp, atk, def, spAtk, spDef, spd
 end
@@ -668,8 +667,8 @@ end
 function getHPTypeAndPower(hp, atk, def, spAtk, spDef, spd)
  local hpType = floor((((hp % 2) + (2 * (atk % 2)) + (4 * (def % 2)) + (8 * (spd % 2)) + (16 * (spAtk % 2))
                 + (32 * (spDef % 2))) * 15) / 63)
- local hpPower = floor(((((hp & 2) / 2 + (atk & 2) + 2 * (def & 2) + 4 * (spd & 2) + 8 * (spAtk & 2)
-                 + 16 * (spDef & 2)) * 40) / 63) + 30)
+ local hpPower = floor((((band(hp, 2) / 2 + band(atk, 2) + 2 * band(def, 2) + 4 * band(spd, 2) + 8 * band(spAtk, 2)
+                 + 16 * band(spDef, 2)) * 40) / 63) + 30)
 
  return hpType, hpPower
 end
@@ -696,10 +695,10 @@ function showIVsAndHP(ivsValue, isRoamer)
 end
 
 function getMoves(value1, value2)
- local move1 = (value1 & 0xFFF)
- local move2 = (value1 >> 16)
- local move3 = (value2 & 0xFFF)
- local move4 = (value2 >> 16)
+ local move1 = band(value1, 0xFFF)
+ local move2 = rshift(value1, 16)
+ local move3 = band(value2, 0xFFF)
+ local move4 = rshift(value2, 16)
 
  return move1, move2, move3, move4
 end
@@ -724,10 +723,10 @@ function getPPColor(value)
 end
 
 function getPP(value)
- local PP1 = (value & 0xFF)
- local PP2 = ((value >> 8) & 0xFF)
- local PP3 = ((value >> 16) & 0xFF)
- local PP4 = (value >> 24)
+ local PP1 = band(value, 0xFF)
+ local PP2 = band(rshift(value, 8), 0xFF)
+ local PP3 = band(rshift(value, 16), 0xFF)
+ local PP4 = rshift(value, 24)
 
  return PP1, PP2, PP3, PP4
 end
@@ -751,25 +750,25 @@ function showInfo(addr)
  local natureIndex = pokemonPID % 25
  local pokemonIDs = read32Bit(addr + 0x4)
  local orderIndex = (pokemonPID % 24) + 1
- local decryptionKey = (pokemonPID ~ pokemonIDs)
+ local decryptionKey = bxor(pokemonPID, pokemonIDs)
  local growthOffset = getOffset("growth", orderIndex)
  local attacksOffset = getOffset("attack", orderIndex)
  local miscOffset = getOffset("misc", orderIndex)
 
- local ivsAndAbilityValue = (read32Bit(addr + 0x20 + miscOffset + 0x4) ~ decryptionKey)
- local speciesAndItemValue = (read32Bit(addr + 0x20 + growthOffset) ~ decryptionKey)
- local movesValue1 = (read32Bit(addr + 0x20 + attacksOffset) ~ decryptionKey)
- local movesValue2 = (read32Bit(addr + 0x20 + attacksOffset + 0x4) ~ decryptionKey)
- local PPValue = (read32Bit(addr + 0x20 + attacksOffset + 0x8) ~ decryptionKey)
+ local ivsAndAbilityValue = bxor(read32Bit(addr + 0x20 + miscOffset + 0x4), decryptionKey)
+ local speciesAndItemValue = bxor(read32Bit(addr + 0x20 + growthOffset), decryptionKey)
+ local movesValue1 = bxor(read32Bit(addr + 0x20 + attacksOffset), decryptionKey)
+ local movesValue2 = bxor(read32Bit(addr + 0x20 + attacksOffset + 0x4), decryptionKey)
+ local PPValue = bxor(read32Bit(addr + 0x20 + attacksOffset + 0x8), decryptionKey)
 
- local speciesDexIndex = (speciesAndItemValue & 0xFFFF)
+ local speciesDexIndex = band(speciesAndItemValue, 0xFFFF)
  local speciesDexNumber = nationalDexList[speciesDexIndex + 1]
  local speciesName = speciesNamesList[speciesDexNumber]
 
- local itemIndex = (speciesAndItemValue >> 16)
+ local itemIndex = rshift(speciesAndItemValue, 16)
  local itemName = itemNamesList[itemIndex + 1]
 
- local abilityNumber = (ivsAndAbilityValue >> 0x1F) + 1
+ local abilityNumber = rshift(ivsAndAbilityValue, 0x1F) + 1
  local abilityName = abilityNamesList[pokemonAbilities[(speciesDexNumber ~= nil and speciesDexNumber < 387) and speciesDexNumber or 1]
                                                       [abilityNumber]]
 
@@ -810,8 +809,8 @@ function getRoamerInput()
 end
 
 function getRoamerInfo()
- local roamerAddr = saveBlock1Addr + 0x3144
- local roamerIVsValue = (read32Bit(roamerAddr) & 0xFF)
+ local roamerAddr = read32Bit(saveBlock1PointerAddr) + 0x31DC
+ local roamerIVsValue = read32Bit(roamerAddr)
  local roamerPID = read32Bit(roamerAddr + 0x4)
  local roamerShinyTypeTextColor, roamerShinyType = shinyCheck(roamerPID)
  local roamerNatureIndex = roamerPID % 25
@@ -824,19 +823,19 @@ function getRoamerInfo()
  local roamerStatus = statusConditionNamesList[1]  -- No altered status condition
 
  local roamerMapGroupAndNum = read16Bit(roamerMapGroupAndNumAddr)
- local roamerMapIndex = (roamerMapGroupAndNum >> 8)
- local playerMapGroupAndNumAddr = saveBlock1Addr + 0x4
+ local roamerMapIndex = rshift(roamerMapGroupAndNum, 8)
+ local playerMapGroupAndNumAddr = read32Bit(saveBlock1PointerAddr) + 0x4
  local playerMapGroupAndNum = read16Bit(playerMapGroupAndNumAddr)
 
  if roamerStatusIndex > 0 and roamerStatusIndex < 0x8 then  -- Sleep
   roamerStatus = statusConditionNamesList[2]
- elseif roamerStatusIndex == 0x8 then  -- Poison
+ elseif roamerStatusIndex == 0x8 then  -- Poison     
   roamerStatus = statusConditionNamesList[3]
- elseif roamerStatusIndex == 0x10 then  -- Burn
+ elseif roamerStatusIndex == 0x10 then  -- Burn     
   roamerStatus = statusConditionNamesList[4]
- elseif roamerStatusIndex == 0x20 then  -- Freeze
+ elseif roamerStatusIndex == 0x20 then  -- Freeze     
   roamerStatus = statusConditionNamesList[5]
- elseif roamerStatusIndex == 0x40 then  -- Paralysis
+ elseif roamerStatusIndex == 0x40 then  -- Paralysis     
   roamerStatus = statusConditionNamesList[6]
  elseif roamerStatusIndex == 0x80 then  -- Bad Poison
   roamerStatus = statusConditionNamesList[7]
@@ -884,13 +883,21 @@ function getCatchRngStopInput()
  gui.text(638, 462, "5 - Stop")
 end
 
+function LCRNG(s, mul1, mul2, sum)
+ local a = mul1 * (s % 0x10000) + rshift(s, 16) * mul2
+ local b = mul2 * (s % 0x10000) + (a % 0x10000) * 0x10000 + sum
+ local c = b % 0x100000000
+
+ return c
+end
+
 function getWildCatchDelay(isSafariZone)
  local key = joypad.get()
 
  getCatchRngStopInput()
 
  if key.Select then
-  startingCatchAdvances = advances
+  startingCatchAdvances = read32Bit(advancesAddr)
   catchDelayCounter = 0
   catchRngStop = false
   catchDelay = 0
@@ -913,7 +920,7 @@ function getWildCatchDelay(isSafariZone)
    end
 
    oneTimeCatchRng = true
-   catchAdvancesDelay = advances - startingCatchAdvances
+   catchAdvancesDelay = read32Bit(advancesAddr) - startingCatchAdvances
   else
    currentSeed2 = read32Bit(currentSeedAddr)
   end
@@ -946,6 +953,7 @@ end
 
 function getCatchRate(speciesDexNumber, isSafariZone)
  if isSafariZone then
+  local safariCatchFactorAddr = read32Bit(safariCatchFactorPointerAddr) + 0x7C
   local safariCatchFactor = read8Bit(safariCatchFactorAddr)
 
   return floor((1275 * safariCatchFactor) / 100)
@@ -974,12 +982,14 @@ function getBonusBall(speciesDexNumber, isSafariZone)
    local level = read8Bit(wildAddr + 0x54)
    ballRate[9] = level < 30 and 40 - level or 10
   elseif ballIndex == 10 then  -- Repeat ball catch rate
-   local dexMask = (1 << (speciesDexNumber - 1) % 8)
+   local saveBlock1Addr = read32Bit(saveBlock1PointerAddr)
+   local saveBlock2Addr = read32Bit(saveBlock2PointerAddr)
+   local dexMask = lshift(1, (speciesDexNumber - 1) % 8)
    local dexIndex = (speciesDexNumber - 1) / 8
-   local dexOwnedFlag = (read8Bit(saveBlock2Addr + 0x28 + dexIndex) & dexMask)
-   local dexSeenFlag = (read8Bit(saveBlock2Addr + 0x5C + dexIndex) & dexMask)
-   local dexSeen1Flag = (read8Bit(saveBlock1Addr + 0x938 + dexIndex) & dexMask)
-   local dexSeen2Flag = (read8Bit(saveBlock1Addr + 0x3A8C + dexIndex) & dexMask)
+   local dexOwnedFlag = band(read8Bit(saveBlock2Addr + 0x28 + dexIndex), dexMask)
+   local dexSeenFlag = band(read8Bit(saveBlock2Addr + 0x5C + dexIndex), dexMask)
+   local dexSeen1Flag = band(read8Bit(saveBlock1Addr + 0x988 + dexIndex), dexMask)
+   local dexSeen2Flag = band(read8Bit(saveBlock1Addr + 0x3B24 + dexIndex), dexMask)
    local isCatchedPokemon = dexOwnedFlag == dexSeenFlag and dexOwnedFlag == dexSeen1Flag and dexOwnedFlag == dexSeen2Flag
    ballRate[10] = isCatchedPokemon and 30 or 10
   elseif ballIndex == 11 then  -- Timer ball catch rate, bonusBall is x4 if battle turns are >= 30
@@ -1028,7 +1038,7 @@ function findSureCatch(seed, catchProbability, isSafariZone)
  while ballShakes ~= 4 do
   ballShakes = 0
 
-  while (seed >> 16) < catchProbability and ballShakes < 4 do
+  while rshift(seed, 16) < catchProbability and ballShakes < 4 do
    ballShakes = ballShakes + 1
    seed = LCRNG(seed, 0x41C6, 0x4E6D, 0x6073)
   end
@@ -1066,17 +1076,23 @@ function catchRng()
 end
 
 function getDayCareInfo()
- local eggStepsCounter = 255 - read8Bit(eggLowPIDAddr - 0x4)
- local eggFlagAddr = saveBlock1Addr + 0x1230
- local isEggReady = ((read8Bit(eggFlagAddr) >> 6) & 0x1) == 1
+ local timer = read32Bit(timerAddr)
+ local calibration = (read32Bit(advancesAddr) - adjustAdvances) - timer
+ local eggPIDAddr = read32Bit(eggPIDPointerAddr) + 0x988
+ local eggPID = read32Bit(eggPIDAddr)
+ local eggShinyTypeTextColor, eggShinyType = shinyCheck(eggPID)
+ local eggNatureIndex = eggPID % 25
+ local eggStepsCounter = 255 - read8Bit(eggPIDAddr - 0x4)
+ local eggFlagAddr = read32Bit(saveBlock1PointerAddr) + 0x1280
+ local isEggReady = band(rshift(read8Bit(eggFlagAddr), 6), 0x1) == 1
 
- return isEggReady, eggStepsCounter
+ return isEggReady, eggStepsCounter, eggPID, eggShinyType, eggShinyTypeTextColor, eggNatureIndex, timer, calibration
 end
 
 function showDayCareInfo()
- local isEggReady, eggStepsCounter = getDayCareInfo()
+ local isEggReady, eggStepsCounter, eggPID, eggShinyType, eggShinyTypeTextColor, eggNatureIndex, timer, calibration = getDayCareInfo()
 
- gui.drawBox(142, 0, 239, 18, 0x7F000000, 0x7F000000)
+ gui.drawBox(142, 0, 239, 30, 0x7F000000, 0x7F000000)
 
  if not isEggReady then
   gui.text(430, 1, "Steps Counter: "..eggStepsCounter)
@@ -1084,10 +1100,10 @@ function showDayCareInfo()
  end
 
  if isEggReady then
-  local eggLowPid = read16Bit(eggLowPIDAddr)
-
   gui.text(430, 1, "Egg generated, go get it!")
-  gui.text(430, 19, string.format("Egg lower PID: %04X", eggLowPid))
+  gui.text(430, 19, "Egg PID:")
+  gui.text(520, 19, string.format("%08X%s", eggPID, eggShinyType), eggShinyTypeTextColor)
+  gui.text(430, 37, "Nature: "..natureNamesList[eggNatureIndex + 1])
  elseif eggStepsCounter == 1 then
   gui.text(430, 37, "Next step might generate Egg!")
  elseif eggStepsCounter == 0 then
@@ -1095,6 +1111,9 @@ function showDayCareInfo()
  else
   gui.text(430, 37, "Keep on steppin'")
  end
+
+ gui.text(430, 55, "Timer: "..timer)
+ gui.text(430, 73, "Calibration: "..calibration + 1)
 end
 
 function isEgg(addr)
@@ -1110,6 +1129,78 @@ function showPartyEggInfo()
  end
 end
 
+function initialSeedWriteCheck()
+ initialSeedWritten = true
+end
+
+memoryWriteCheck(initialSeedWriteCheck, initialSeedAddr)
+
+function isTIDFound()
+ local TID = read32Bit(initialSeedAddr)
+
+ for i = 1, table.getn(botTargetTIDs) do
+  if TID == botTargetTIDs[i] then
+   return true
+  end
+ end
+
+ return false
+end
+
+function TIDBotLoop()
+ initialSeedWritten = false
+ botOneTime = false
+
+ while not TIDFound do
+  savestate.save(0)
+  joypad.set({A = true})
+  local i = 0
+
+  while not initialSeedWritten and i < 40 do
+   emu.frameadvance()
+   i = i + 1
+  end
+
+  if initialSeedWritten then
+   --print(read16Bit(initialSeedAddr))
+   TIDFound = isTIDFound()
+  end
+
+  if not TIDFound then
+   initialSeedWritten = false
+   savestate.load(0)
+   emu.frameadvance()
+  else
+   break
+  end
+ end
+end
+
+function showFoundTID()
+ local TID = read32Bit(initialSeedAddr)
+
+ if TIDFound then
+  gui.drawBox(0, 100, 34, 111, 0x7F000000, 0x7F000000)
+  gui.text(1, 302, "Found!")
+  gui.text(1, 320, "TID: "..TID)
+
+  if not botOneTime then
+   client.pause()
+   botOneTime = true
+  end
+ end
+end
+
+function TIDBot()
+ local key = joypad.get()
+
+ if key.Start then
+  TIDBotLoop()
+ end
+
+ showFoundTID()
+end
+
 function getInfoInput()
  local key = input.get()
 
@@ -1118,18 +1209,19 @@ function getInfoInput()
 
  if (key["Number3"] or key["Keypad3"]) and (not prevKeyInfo["Number3"] and not prevKeyInfo["Keypad3"]) then
   leftInfoArrowColor = "orange"
-  infoIndex = infoIndex - 1 < 1 and 4 or infoIndex - 1
+  infoIndex = infoIndex - 1 < 1 and 8 or infoIndex - 1
  elseif (key["Number4"] or key["Keypad4"]) and (not prevKeyInfo["Number4"] and not prevKeyInfo["Keypad4"]) then
   rightInfoArrowColor = "orange"
-  infoIndex = infoIndex + 1 > 4 and 1 or infoIndex + 1
+  infoIndex = infoIndex + 1 > 8 and 1 or infoIndex + 1
  end
 
  prevKeyInfo = key
  gui.drawBox(155, 0, 239, 6, 0x7F000000, 0x7F000000)
+ gui.drawBox(201, 7, 239, 12, 0x7F000000, 0x7F000000)
  gui.text(468, 1, "Mode: "..infoMode[infoIndex])
- drawArrowLeft(202, 0, leftInfoArrowColor)
- gui.text(638, 1, "3 - 4")
- drawArrowRight(238, 0, rightInfoArrowColor)
+ drawArrowLeft(202, 6, leftInfoArrowColor)
+ gui.text(638, 21, "3 - 4")
+ drawArrowRight(238, 6, rightInfoArrowColor)
 end
 
 function showPokemonIDs(addr)
@@ -1147,13 +1239,13 @@ function showPokemonInfo()
   showInfo(lastPartySlotAddr)
   showPokemonIDs(lastPartySlotAddr)
  elseif infoMode[infoIndex] == "Party" then
-  local partySlotsCounter = read8Bit(partySlotsCounterAddr) - 1
-  local partySelectedSlotIndex = read8Bit(partySelectedSlotIndexAddr + (partySlotsCounter * 0x88))
+  local partySelectedSlotIndex = read8Bit(partySelectedSlotIndexAddr)
   local partySelectedPokemonAddr = partyAddr + (partySelectedSlotIndex * 0x64)
 
   showInfo(partySelectedPokemonAddr)
   showPokemonIDs(partySelectedPokemonAddr)
  elseif infoMode[infoIndex] == "Box" then
+  local currBoxIndexAddr = read32Bit(currBoxIndexPointerAddr)
   local currBoxIndex = read8Bit(currBoxIndexAddr)
   local boxAddr = currBoxIndexAddr + 0x4
   local boxSelectedSlotIndex = read8Bit(boxSelectedSlotIndexAddr)
@@ -1161,16 +1253,23 @@ function showPokemonInfo()
 
   showInfo(boxSelectedPokemonAddr)
   showPokemonIDs(boxSelectedPokemonAddr)
- elseif infoMode[infoIndex] == "Stats" then
+ elseif infoMode[infoIndex] == "Battle Party Stats" then
+  showInfo(pokemonBattleStatsScreenAddr)
+  showPokemonIDs(pokemonBattleStatsScreenAddr)
+ elseif infoMode[infoIndex] == "1st Floor Box Stats" then
   showInfo(pokemonStatsScreenAddr)
   showPokemonIDs(pokemonStatsScreenAddr)
+ elseif infoMode[infoIndex] == "Party Stats" or infoMode[infoIndex] == "2nd Floor Box Stats"
+        or infoMode[infoIndex] == "DayCare Box Stats"
+ then
+  showInfo(pokemonStatsScreen2Addr)
+  showPokemonIDs(pokemonStatsScreen2Addr)
  end
 end
 
 function setSaveStateValues()
  initialSeed = userdata.get("seed")
- tempCurrentSeed = userdata.get("temp")
- advances = userdata.get("advances")
+ adjustAdvances = userdata.get("advances")
 end
 
 event.onloadstate(setSaveStateValues)
@@ -1180,13 +1279,13 @@ while not wrongGameVersion do
  getInput()
  showRngInfo()
 
- if mode[index] ~= "None" and mode[index] ~= "100% Catch" then
+ if mode[index] ~= "None" and mode[index] ~= "100% Catch" and mode[index] ~= "TID Bot" then
   getRngInfoInput()
 
   if mode[index] ~= "Pokemon Info" then
    showTrainerIDs()
   end
- elseif mode[index] == "100% Catch" then
+ elseif mode[index] == "100% Catch" or mode[index] == "TID Bot" then
   getInstructionsInput()
  end
 
@@ -1202,6 +1301,8 @@ while not wrongGameVersion do
  elseif mode[index] == "Breeding" then
   showDayCareInfo()
   showPartyEggInfo()
+ elseif mode[index] == "TID Bot" then
+  TIDBot()
  elseif mode[index] == "Pokemon Info" then
   getInfoInput()
   showPokemonInfo()
