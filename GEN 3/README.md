@@ -22,6 +22,14 @@ The main scripts for each game provided in the respective emulator folders have 
 * [mGBA 0.10.3](https://mgba.io/downloads.html) or later is required for mGBA scripts (latest version advised)
 * [Dolphin Lua-core](https://github.com/Real96/Dolphin-Lua-Core) is required for GCN scripts
 
+## How To Navigate The Scripts
+
+You can cycle between different pages of the lua scripts and toggle some windows on or off by pressing the corresponding number in your numbers row/number keys (_not__ NumPad!).
+
+Example:
+* When you see arrows with numbers like ``<- 1-2 ->`` this means you can cycle left (1) or right (2) between pages of the lua script
+* When you see something like ``3 - Show Instructions`` it means you can toggle a specific info window to appear. Once you do, a different instruction to hide that window replaces it, and vice-versa
+
 ## FRLG Initial Seed Bot Instructions
 Due to the rapidly advancing method of generation of Initial Seeds in these games, a Bot that cycles for a desired Initial Seed is provided
 
@@ -58,7 +66,7 @@ The scripts provided here for each game showcase the most varied information tha
 * Every time you need to save or load a state, hold `Shift` + `(n)`/`(n)` (ex. `Shift` + `1` to save a state in slot 1 or `1` to load the state in slot 1) with game unpaused
 
 ### Credits
-Source repos [DevonStudios](https://github.com/DevonStudios/LuaScripts/tree/main/Gen%203) &amp; [Real96](https://github.com/Real96/PokeLua/tree/main/Gen%203). Scripts by Real96 with BH scripts updated/ported over to BH 2.9+ by [Lego](https://github.com/LegoFigure11) & [Unknown Warrior](https://github.com/Unknown-Warrior)
+Source repos [DevonStudios](https://github.com/DevonStudios/LuaScripts/tree/main/Gen%203) &amp; [Real96](https://github.com/Real96/PokeLua/tree/main/Gen%203). Scripts by Real96 with BH scripts updated/ported over to BH 2.9+ by [Lego](https://github.com/LegoFigure11) & [Unknown Warrior](https://github.com/Unknown-Warrior).
 
 ***
 [< Back to the main page](https://github.com/Wi-Fi-Labs/PokeRNG-LuaScripts)

@@ -1,7 +1,5 @@
 read16Bit = memory.read_u16_be
 read8Bit = memory.readbyte
-rshift = bit.rshift
-band = bit.band
 
 local speciesNamesList = {
  "Rhydon", "Kangaskhan", "Nidoran♂", "Clefairy", "Spearow", "Voltorb", "Nidoking", "Slowbro",
@@ -181,10 +179,10 @@ end
 function getDVs(DVsAddr)
  local atkDefDVs = read8Bit(DVsAddr)
  local speSpcDVs = read8Bit(DVsAddr + 0x1)
- local atkDV = rshift(atkDefDVs, 4)
- local defDV = band(atkDefDVs, 0xF)
- local speDV = rshift(speSpcDVs, 4)
- local spcDV = band(speSpcDVs, 0xF)
+ local atkDV = (atkDefDVs >> 4)
+ local defDV = (atkDefDVs & 0xF)
+ local speDV = (speSpcDVs >> 4)
+ local spcDV = (speSpcDVs & 0xF)
 
  return atkDV, defDV, speDV, spcDV
 end

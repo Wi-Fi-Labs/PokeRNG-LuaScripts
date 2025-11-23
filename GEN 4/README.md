@@ -20,6 +20,14 @@ The main scripts for each game provided in the respective emulator folders have 
 * [DeSmuMe 0.9.11 x32 Dev+](https://www.mediafire.com/file/8r0rwano0ioi3nl/desmume-0.9.11-win32-dev.zip/file) version with `lua51.dll` required
 * [Bizhawk 2.9](https://github.com/TASEmulators/BizHawk/releases) or higher required (earlier versions not supported)
 
+## How To Navigate The Scripts
+
+You can cycle between different pages of the lua scripts and toggle some windows on or off by pressing the corresponding number in your numbers row/number keys (_not__ NumPad!).
+
+Example:
+* When you see arrows with numbers like ``<- 1-2 ->`` this means you can cycle left (1) or right (2) between pages of the lua script
+* When you see something like ``3 - Show Instructions`` it means you can toggle a specific info window to appear. Once you do, a different instruction to hide that window replaces it, and vice-versa
+
 ## DPPtHGSS LCRNG Advance Bot (Chatot Chicanery) Instructions
 This script consists of a simple Bot that auto-advances a predetermined number of LCRNG (also called PIDRNG) frames.
 
