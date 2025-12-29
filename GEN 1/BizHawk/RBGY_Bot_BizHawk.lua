@@ -320,7 +320,7 @@ end
 function isTIDFound()
  local TID = read16Bit(tidAddr)
 
- for i = 1, table.getn(botTargetTIDs) do
+ for i = 1, #(botTargetTIDs) do
   if TID == botTargetTIDs[i] then
    return true
   end
