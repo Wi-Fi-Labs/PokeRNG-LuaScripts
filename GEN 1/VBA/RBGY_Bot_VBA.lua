@@ -45,6 +45,7 @@ local warning
 local mode = {"None", "Gift Bot", "Stationary Bot", "Fishing Bot", "In-Game Trade Bot", "TID Bot", "Pokemon Info"}
 local index = 1
 local prevKey = {}
+local printDebug = false
 local showInstructionsText = false
 local leftArrowColor
 local rightArrowColor
@@ -147,6 +148,8 @@ function getInput()
  elseif (key["2"] or key["numpad2"]) and (not prevKey["2"] and not prevKey["numpad2"]) then
   rightArrowColor = "orange"
   index = index + 1 > 7 and 1 or index + 1
+ elseif (key["0"] or key["numpad0"]) and (not prevKey["0"] and not prevKey["numpad0"]) then
+  printDebug = not printDebug
  end
 
  prevKey = key
@@ -217,7 +220,9 @@ function shinyBotLoop(pokemonDVsAddr)
 
   if atkDefDVs ~= previousAtkDefDVs or speSpcDVs ~= previousSpeSpcDVs then
    local atkDV, defDV, speDV, spcDV = getDVs(pokemonDVsAddr)
-   --print(atkDV.." "..defDV.." "..speDV.." "..spcDV)
+   if printDebug then
+    print(atkDV.." "..defDV.." "..speDV.." "..spcDV)
+   end
    shinyFound = isShiny(atkDV, defDV, speDV, spcDV)
   end
 
@@ -315,7 +320,9 @@ end
 
 function isTIDFound()
  local TID = reverseWord(read16Bit(tidAddr))
-
+ if printDebug then
+  print("Found TID: "..TID)
+ end
  for i = 1, table.getn(botTargetTIDs) do
   if TID == botTargetTIDs[i] then
    return true
@@ -343,7 +350,6 @@ function TIDBotLoop()
   end
 
   if isTIDSet then
-   --print(reverseWord(read16Bit(tidAddr)))
    TIDFound = isTIDFound()
   end
 
