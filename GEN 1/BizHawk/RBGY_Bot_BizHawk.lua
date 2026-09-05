@@ -167,6 +167,16 @@ function getInput()
  drawArrowRight(140, 0, rightArrowColor)
 end
 
+function checkDebugKey()
+ local key = input.get()
+
+ if (key["Number0"] or key["KeyPad0"]) and (not prevKey["Number0"] and not prevKey["KeyPad0"]) then
+  printDebug = not printDebug
+ end
+
+ prevKey = key
+end
+
 function drawArrowLeft(a, b, c)
  gui.drawLine(a, b + 3, a + 2, b + 5, c)
  gui.drawLine(a, b + 3, a + 2, b + 1, c)
@@ -201,6 +211,7 @@ function shinyBotLoop(pokemonDVsAddr)
  botOneTime = false
 
  while not shinyFound[1] do
+  checkDebugKey()
   savestate.save(0)
   joypad.set({A = true})
   local frameLimit
@@ -220,6 +231,7 @@ function shinyBotLoop(pokemonDVsAddr)
 
   local i = 0
   while atkDefDVs == previousAtkDefDVs and speSpcDVs == previousSpeSpcDVs and i < frameLimit do
+   checkDebugKey()
    atkDefDVs = read8Bit(pokemonDVsAddr)
    speSpcDVs = read8Bit(pokemonDVsAddr + 1)
    emu.frameadvance()
@@ -341,13 +353,15 @@ function TIDBotLoop()
  botOneTime = false
 
  while not TIDFound do
+  checkDebugKey()
   savestate.save(0)
   joypad.set({A = true})
 
   local isTIDSet = read16Bit(tidAddr + 0x4) ~= 0
 
   local i = 0
-  while not isTIDSet and i < 35 do
+   while not isTIDSet and i < 35 do
+   checkDebugKey()
    isTIDSet = read16Bit(tidAddr + 0x4) ~= 0
    emu.frameadvance()
    i = i + 1
