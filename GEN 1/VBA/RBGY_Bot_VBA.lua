@@ -45,6 +45,7 @@ local warning
 local mode = {"None", "Gift Bot", "Stationary Bot", "Fishing Bot", "In-Game Trade Bot", "TID Bot", "Pokemon Info"}
 local index = 1
 local prevKey = {}
+local printDebug = false
 local showInstructionsText = false
 local leftArrowColor
 local rightArrowColor
@@ -147,6 +148,8 @@ function getInput()
  elseif (key["2"] or key["numpad2"]) and (not prevKey["2"] and not prevKey["numpad2"]) then
   rightArrowColor = "orange"
   index = index + 1 > 7 and 1 or index + 1
+ elseif (key["0"] or key["numpad0"]) and (not prevKey["0"] and not prevKey["numpad0"]) then
+  printDebug = not printDebug
  end
 
  prevKey = key
@@ -154,6 +157,16 @@ function getInput()
  drawArrowLeft(100, 1, leftArrowColor)
  gui.text(110, 1, "1 - 2")
  drawArrowRight(138, 1, rightArrowColor)
+end
+
+function checkDebugKey()
+ local key = input.get()
+
+ if (key["0"] or key["numpad0"]) and (not prevKey["0"] and not prevKey["numpad0"]) then
+  printDebug = not printDebug
+ end
+
+ prevKey = key
 end
 
 function drawArrowLeft(a, b, c)
@@ -190,6 +203,7 @@ function shinyBotLoop(pokemonDVsAddr)
  botOneTime = false
 
  while not shinyFound[1] do
+  checkDebugKey()
   savestate.save(botState)
   joypad.set(1, {A = true})
   local frameLimit
@@ -209,6 +223,7 @@ function shinyBotLoop(pokemonDVsAddr)
 
   local i = 0
   while atkDefDVs == previousAtkDefDVs and speSpcDVs == previousSpeSpcDVs and i < frameLimit do
+   checkDebugKey()
    atkDefDVs = read8Bit(pokemonDVsAddr)
    speSpcDVs = read8Bit(pokemonDVsAddr + 1)
    emu.frameadvance()
@@ -217,7 +232,9 @@ function shinyBotLoop(pokemonDVsAddr)
 
   if atkDefDVs ~= previousAtkDefDVs or speSpcDVs ~= previousSpeSpcDVs then
    local atkDV, defDV, speDV, spcDV = getDVs(pokemonDVsAddr)
-   --print(atkDV.." "..defDV.." "..speDV.." "..spcDV)
+   if printDebug then
+    print(atkDV.." "..defDV.." "..speDV.." "..spcDV)
+   end
    shinyFound = isShiny(atkDV, defDV, speDV, spcDV)
   end
 
@@ -315,7 +332,9 @@ end
 
 function isTIDFound()
  local TID = reverseWord(read16Bit(tidAddr))
-
+ if printDebug then
+  print("Found TID: "..TID)
+ end
  for i = 1, table.getn(botTargetTIDs) do
   if TID == botTargetTIDs[i] then
    return true
@@ -330,6 +349,7 @@ function TIDBotLoop()
  botOneTime = false
 
  while not TIDFound do
+  checkDebugKey()
   savestate.save(botState)
   joypad.set(1, {A = true})
 
@@ -337,13 +357,13 @@ function TIDBotLoop()
 
   local i = 0
   while not isTIDSet and i < 35 do
+   checkDebugKey()
    isTIDSet = read16Bit(tidAddr + 0x4) ~= 0
    emu.frameadvance()
    i = i + 1
   end
 
   if isTIDSet then
-   --print(reverseWord(read16Bit(tidAddr)))
    TIDFound = isTIDFound()
   end
 

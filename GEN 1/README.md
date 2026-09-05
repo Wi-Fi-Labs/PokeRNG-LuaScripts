@@ -16,8 +16,6 @@ These Bots simply hunt for any combo of DVs that makes the Pokémon shiny. They 
 
 To start any of the Bots simply place yourself at the required final screen (as referred below) and press SELECT
 
-Note: If you wish the bot to display DV values as it is resetting & discarding, you can enable this by editing the ``.lua`` files directly. Simply remove the ``--`` before ``print(atkDV.." "..defDV.." "..speDV.." "..spcDV)`` in line 220/228 of the VBA/Bizhawk lua script file, respectively.
-
 ## How To Navigate The Scripts
 
 You can cycle between different pages of the lua scripts and toggle some windows on or off by pressing the corresponding number in your numbers row/number keys (_not_ NumPad!).
@@ -25,6 +23,8 @@ You can cycle between different pages of the lua scripts and toggle some windows
 Example:
 * When you see arrows with numbers like ``<- 1-2 ->`` this means you can cycle left (1) or right (2) between pages of the lua script
 * When you see something like ``3 - Show Instructions`` it means you can toggle a specific info window to appear. Once you do, a different instruction to hide that window replaces it, and vice-versa
+
+You can press ``0`` on your keyboard at any point while a bot is running to toggle debug printing on/off, which can be useful to tell if everything is operating smoothly. Printing these messages to the script output is an expensive operation, and as such it is advised to have them disabled once you have confirmed the correct operation of the bot in order to avoid unnecessary slowdowns to the emulator.
 
 ## Gift
 Pokémon is generated after the nickname prompt (Y/N)
@@ -66,7 +66,7 @@ This script (not a bot) will show on-screen what nature your party Pokémon will
 Nature is based on experience points, so gaining experience points will change nature. You can find a detailed table of what experience values translate to each natures [here](https://www.pokemonrng.com/misc-3ds-transporter-nature-tables)
 
 ### Credits
-Source repo &amp; unified script by [Real96](https://github.com/Real96/PokeLua/tree/main/Gen%201). Original code &amp; scripts by [zep715](https://github.com/zep715/rbylua). Unified BH script updated for BH 2.9+ by [Unknown Warrior](https://github.com/Unknown-Warrior).
+Source repo &amp; unified script by [Real96](https://github.com/Real96/PokeLua/tree/main/Gen%201). Original code &amp; scripts by [zep715](https://github.com/zep715/rbylua). Unified BH script updated for BH 2.9+ by [Unknown Warrior](https://github.com/Unknown-Warrior), with minor tweaks by [LegoFigure11](https://github.com/LegoFigure11).
 
 ***
 [< Back to the main page](https://github.com/Wi-Fi-Labs/PokeRNG-LuaScripts)
