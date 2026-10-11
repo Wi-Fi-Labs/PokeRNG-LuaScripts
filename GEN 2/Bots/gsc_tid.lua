@@ -14,7 +14,7 @@ if version == 0x54 then
         print("USA Crystal detected")
         tid_addr = 0xd47b
     elseif region == 0x4A then
-        print("JAP Crystal detected")
+        print("JPN Crystal detected")
         tid_addr = 0xd48c
     end
 elseif version == 0x55 or version == 0x58 then

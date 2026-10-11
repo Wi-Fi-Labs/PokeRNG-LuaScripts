@@ -12,7 +12,7 @@ if version == 0x54 then
         print("USA Crystal detected")
         enemy_addr = 0xd20c
     elseif region == 0x4A then
-        print("JAP Crystal detected")
+        print("JPN Crystal detected")
         enemy_addr = 0xd23d
     end
 elseif version == 0x55 or version == 0x58 then
