@@ -604,7 +604,7 @@ function setDateTime()
  dateTime["year"] = string.format("%02X", read8Bit(dateTimeAddr))
  dateTime["month"] = string.format("%02X", read8Bit(dateTimeAddr + 0x1))
  dateTime["day"] = string.format("%02X", read8Bit(dateTimeAddr + 0x2))
- dateTime["hour"] = string.format("%02X", read8Bit(dateTimeAddr + 0x4) % 0x40)
+ dateTime["hour"] = string.format("%02X", read8Bit(dateTimeAddr + 0x4) & 63)
  dateTime["minute"] = string.format("%02X", read8Bit(dateTimeAddr + 0x5))
  dateTime["second"] = string.format("%02X", read8Bit(dateTimeAddr + 0x6))
 end
@@ -662,7 +662,7 @@ end
 local UPPER_MASK = 0x80000000
 
 function tobit(value)
- return (value % 0x100000000) - (value >= UPPER_MASK and 0x100000000 or 0)
+ return (value & 0xFFFFFFFF) - (value >= UPPER_MASK and 0x100000000 or 0)
 end
 
 local N = 624
@@ -735,12 +735,12 @@ function buildSeedFromDelay(delay, predictSeedFlag)
   nextSeconds, nextMinutes, nextHours, nextDays = setPredictedDateTime()
  end
 
- local ab = ((dateTime["month"] * nextDays) + nextMinutes + nextSeconds) % 0x100
+ local ab = ((dateTime["month"] * nextDays) + nextMinutes + nextSeconds) & 0xFF
  local cd = nextHours
  local efgh = dateTime["year"] + delay
- local macAddr = 0xE4916  -- BizHawk MAC addres
+ local macAddr = 0xE4916  -- BizHawk MAC address
 
- return ((ab * 0x1000000) + (cd * 0x10000) + efgh + macAddr) % 0x100000000
+ return ((ab << 24) + (cd << 16) + efgh + macAddr) & 0xFFFFFFFF
 end
 
 function convertToString(seed)
@@ -767,10 +767,10 @@ function handleMTAdvances(mtSeed, delay)
 end
 
 function LCRNG(s, mul, sum)
- local a = (mul >> 16) * (s % 0x10000) + (s >> 16) * (mul % 0x10000)
- local b = (mul % 0x10000) * (s % 0x10000) + (a % 0x10000) * 0x10000 + sum
+ local a = (mul >> 16) * (s & 0xFFFF) + (s >> 16) * (mul & 0xFFFF)
+ local b = (mul & 0xFFFF) * (s & 0xFFFF) + ((a & 0xFFFF) << 16) + sum
 
- return b % 0x100000000
+ return b & 0xFFFFFFFF
 end
 
 function LCRNGDistance(state0, state1)
@@ -959,7 +959,7 @@ function shinyCheck(PID, trainerTID, trainerSID)
 end
 
 function getBits(a, b, d)
- return (a >> b) % (1 << d)
+ return (a >> b) & ((1 << d) - 1)
 end
 
 function getIVs(ivsValue, isRoamer)

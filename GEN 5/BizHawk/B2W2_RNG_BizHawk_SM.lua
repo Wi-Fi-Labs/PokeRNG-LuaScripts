@@ -544,7 +544,7 @@ function setDateTime()
  dateTime["year"] = string.format("%02X", read8Bit(dateTimeAddr))
  dateTime["month"] = string.format("%02X", read8Bit(dateTimeAddr + 0x1))
  dateTime["day"] = string.format("%02X", read8Bit(dateTimeAddr + 0x2))
- dateTime["hour"] = string.format("%02X", read8Bit(dateTimeAddr + 0x4) % 0x40)
+ dateTime["hour"] = string.format("%02X", read8Bit(dateTimeAddr + 0x4) & 63)
  dateTime["minute"] = string.format("%02X", read8Bit(dateTimeAddr + 0x5))
  dateTime["second"] = string.format("%02X", read8Bit(dateTimeAddr + 0x6))
 end
@@ -600,10 +600,10 @@ function checkInitialSeedGeneration(mtSeed, currentHigh, currentLow)
 end
 
 function LCRNG(s, mul, sum)
- local a = (mul >> 16) * (s % 0x10000) + (s >> 16) * (mul % 0x10000)
- local b = (mul % 0x10000) * (s % 0x10000) + (a % 0x10000) * 0x10000 + sum
+ local a = (mul >> 16) * (s & 0xFFFF) + (s >> 16) * (mul & 0xFFFF)
+ local b = (mul & 0xFFFF) * (s & 0xFFFF) + ((a & 0xFFFF) << 16) + sum
 
- return b % 0x100000000
+ return b & 0xFFFF
 end
 
 function LCRNGDistance(state0, state1)
@@ -761,7 +761,7 @@ function shinyCheck(PID, trainerTID, trainerSID)
 end
 
 function getBits(a, b, d)
- return (a >> b) % (1 << d)
+ return (a >> b) & ((1 << d) - 1)
 end
 
 function getIVs(ivsValue)
