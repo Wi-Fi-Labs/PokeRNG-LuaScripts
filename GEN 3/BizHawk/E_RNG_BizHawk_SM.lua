@@ -881,7 +881,7 @@ end
 
 function LCRNG(s, mul1, mul2, sum)
  local a = mul1 * (s & 0xFFFF) + (s >> 16) * mul2
- local b = mul2 * (s & 0xFFFF) + (a & 0xFFFF) * 0x10000 + sum
+ local b = mul2 * (s & 0xFFFF) + ((a & 0xFFFF) << 16) + sum
  local c = b & 0xFFFFFFFF
 
  return c

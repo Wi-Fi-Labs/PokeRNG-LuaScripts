@@ -740,7 +740,7 @@ function buildSeedFromDelay(delay, predictSeedFlag)
  local efgh = dateTime["year"] + delay
  local macAddr = 0xE4916  -- BizHawk MAC address
 
- return ((ab * 0x1000000) + (cd * 0x10000) + efgh + macAddr) & 0xFFFFFFFF
+ return ((ab << 24) + (cd << 16) + efgh + macAddr) & 0xFFFFFFFF
 end
 
 function convertToString(seed)
@@ -768,7 +768,7 @@ end
 
 function LCRNG(s, mul, sum)
  local a = (mul >> 16) * (s & 0xFFFF) + (s >> 16) * (mul & 0xFFFF)
- local b = (mul & 0xFFFF) * (s & 0xFFFF) + (a & 0xFFFF) * 0x10000 + sum
+ local b = (mul & 0xFFFF) * (s & 0xFFFF) + ((a & 0xFFFF) << 16) + sum
 
  return b & 0xFFFFFFFF
 end
