@@ -258,7 +258,7 @@ end
 function showFoundShiny(pokemonDVsAddr)
  if shinyFound[1] and shinyFound[2] == mode[index] then
   local atkDV, defDV, speDV, spcDV = getDVs(pokemonDVsAddr)
-  local hpDV = ((atkDV % 2) * 8) + ((defDV % 2) * 4) + ((speDV % 2) * 2) + (spcDV % 2)
+  local hpDV = ((atkDV & 1) * 8) + ((defDV & 1) * 4) + ((speDV & 1) * 2) + (spcDV & 1)
 
   gui.text(emuWindow.leftPadding + 1, emuWindow.height / 2, "Shiny Found!")
   gui.text(emuWindow.leftPadding + 1, (emuWindow.height / 2) + 18, string.format("Hp: %d", hpDV))

@@ -517,7 +517,7 @@ function setDateTime()
  dateTime["year"] = string.format("%02X", read8Bit(dateTimeAddr))
  dateTime["month"] = string.format("%02X", read8Bit(dateTimeAddr + 0x1))
  dateTime["day"] = string.format("%02X", read8Bit(dateTimeAddr + 0x2))
- dateTime["hour"] = string.format("%02X", read8Bit(dateTimeAddr + 0x4) % 0x40)
+ dateTime["hour"] = string.format("%02X", read8Bit(dateTimeAddr + 0x4) & 63)
  dateTime["minute"] = string.format("%02X", read8Bit(dateTimeAddr + 0x5))
  dateTime["second"] = string.format("%02X", read8Bit(dateTimeAddr + 0x6))
 end
@@ -557,11 +557,11 @@ function getTabInput()
 end
 
 function buildSeedFromDelay(delay)
- local ab = ((dateTime["month"] * dateTime["day"]) + dateTime["minute"] + dateTime["second"]) % 0x100
+ local ab = ((dateTime["month"] * dateTime["day"]) + dateTime["minute"] + dateTime["second"]) & 0xFF
  local cd = dateTime["hour"]
  local efgh = dateTime["year"] + delay
 
- return ((ab * 0x1000000) + (cd * 0x10000) + efgh) % 0x100000000
+ return ((ab << 24) + (cd << 16) + efgh) & 0xFFFFFFFF
 end
 
 local prevMTSeed, initialSeed, tempCurrentSeed, mtCounter, hitDelay , hitDate = 0, 0, 0, 0, 0, "2000/01/01\n00:00:00"
@@ -593,10 +593,10 @@ function setInitialSeed(mtSeed, delay)
 end
 
 function LCRNG(s, mul, sum)
- local a = (mul >> 16) * (s % 0x10000) + (s >> 16) * (mul % 0x10000)
- local b = (mul % 0x10000) * (s % 0x10000) + (a % 0x10000) * 0x10000 + sum
+ local a = (mul >> 16) * (s & 0xFFFF) + (s >> 16) * (mul & 0xFFFF)
+ local b = (mul & 0xFFFF) * (s & 0xFFFF) + (a & 0xFFFF) * 0x10000 + sum
 
- return b % 0x100000000
+ return b & 0xFFFFFFFF
 end
 
 function LCRNGDistance(state0, state1)
@@ -802,7 +802,7 @@ function shinyCheck(PID, trainerTID, trainerSID)
 end
 
 function getBits(a, b, d)
- return (a >> b) % (1 << d)
+ return (a >> b) & ((1 << d) - 1)
 end
 
 function getIVs(ivsValue)
@@ -1140,7 +1140,7 @@ function coolDownEndCheck(steps, currentSteps)
 end
 
 function getEncounterCheckValue(seed)
- return (seed >> 16) % 0x64
+ return (seed >> 16) % 100
 end
 
 function getEncounterMissingSteps(movement, encounter)
