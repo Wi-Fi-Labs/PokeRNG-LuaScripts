@@ -10,11 +10,11 @@
 ## IMPORTANT
 This script is an all-in-one version of zep715's original ones, created by Real96
 * [VBA 23.6 RR 480-LRC4](https://github.com/TASEmulators/vba-rerecording/releases/tag/480LRC4) version required for VBA scripts
-* [Bizhawk 2.8](https://github.com/TASEmulators/BizHawk/releases/tag/2.8) required - newer versions not supported yet
+* [Bizhawk 2.9](https://github.com/TASEmulators/BizHawk/releases) **or higher** required (latest version strongly advised)
 
 These Bots simply hunt for any combo of DVs that makes the Pokémon shiny. They work by making a save state that they then restore to if no match is found; you'll see this happening in your emulator's screen. Once a match is found the emulator is paused.
 
-To start any of the Bots simply place yourself at the required final screen (as referred below) and press SELECT
+To start any of the Bots simply place yourself at the required final screen (as referred below) and press ``SELECT``
 
 ## How To Navigate The Scripts
 
@@ -43,7 +43,7 @@ Valid for: Snorlax, Zapdos, Articuno, Moltres, Mewtwo, Electrode/Voltorb in Powe
 ## Fishing
 The Species is generated first, and the IVs right after
 
-Edit the script for the desired species index number at ``local botTargetFishingSpecies =``. Index numbers can be found here: https://bulbapedia.bulbagarden.net/wiki/List_of_Pok%C3%A9mon_by_index_number_(Generation_I)
+Edit the script for the desired species index number at ``local botTargetFishingSpecies =``. Index numbers [can be found here](https://bulbapedia.bulbagarden.net/wiki/List_of_Pok%C3%A9mon_by_index_number_(Generation_I))
 
 The final screen is: Select your rod, put cursor over "Use" and run the Bot (Press Select)
 
