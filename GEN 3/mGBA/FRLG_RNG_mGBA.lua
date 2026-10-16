@@ -566,7 +566,7 @@ end
 function showStepCounter(buffer)
  local stepCounterAddr = emu:read32(saveBlock1PointerAddr) + 0x309A
  local stepCounter = 255 - emu:read8(stepCounterAddr)
- buffer:print(string.format("Steps counter (Friendship/Egg cycles): %d\n\n\n", stepCounter))
+ buffer:print(string.format("Steps counter (Egg cycles): %d\n\n\n", stepCounter))
 end
 
 function getPokemonIDs(addr)
