@@ -39,6 +39,9 @@ To start the Bot properly, open the Summary view of the Chatot in the LAST slot 
 
 An alternative version for Bizhawk without the screen change function, where the text is fixed to top screen is included, as this function has proved a bit buggy on this emulator
 
+## My Pokémon Ranch Dolphin RNG Script
+To be used with [Dolphin with Lua support](https://github.com/Real96/dolphin/releases) and [Real96's RNG tool](https://github.com/Real96/RanchRNGTool)
+
 ## Notes for DeSmuMe scripts
 * Press the button `Restart` in the lua window every time you need to restart the game
 * Pause the game every time you need to save or load a state and hold `Shift` + `F(n)`/`F(n)` (ex. `Shift` + `F1` to save a state in slot 1) for some seconds, until you see the message `Saved State (n)`/`Loaded State (n)` appearing on the screen for less than a second

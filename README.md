@@ -68,6 +68,9 @@ Source repos [DevonStudios](https://github.com/DevonStudios/LuaScripts/tree/main
 * DPPt Safari Zone Pokémon Checker / HGSS Safari Zone Tiles Checker
 * Pokémon Info and Stats display for Speed-runners (commonly referred to as the 'Rainbow' lua)
 
+### My Pokémon Ranch
+* RNG Info
+
 Source repos &amp; scripts by [Real96](https://github.com/Real96/PokeLua/tree/main/Gen%204), [Unknown Warrior](https://github.com/Unknown-Warrior/LUA_Scripts) &amp; [Martmists-GH](https://github.com/Martmists-GH/PokemonOverlay)
 
 ## [Gen 5](https://github.com/Wi-Fi-Labs/PokeRNG-LuaScripts/tree/main/GEN%205)
