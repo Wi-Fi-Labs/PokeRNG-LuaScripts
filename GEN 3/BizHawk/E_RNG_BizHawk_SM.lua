@@ -880,9 +880,9 @@ function getCatchRngStopInput()
 end
 
 function LCRNG(s, mul1, mul2, sum)
- local a = mul1 * (s % 0x10000) + (s >> 16) * mul2
- local b = mul2 * (s % 0x10000) + (a % 0x10000) * 0x10000 + sum
- local c = b % 0x100000000
+ local a = mul1 * (s & 0xFFFF) + (s >> 16) * mul2
+ local b = mul2 * (s & 0xFFFF) + ((a & 0xFFFF) << 16) + sum
+ local c = b & 0xFFFFFFFF
 
  return c
 end
@@ -980,7 +980,7 @@ function getBonusBall(speciesDexNumber, isSafariZone)
   elseif ballIndex == 10 then  -- Repeat ball catch rate
    local saveBlock1Addr = read32Bit(saveBlock1PointerAddr)
    local saveBlock2Addr = read32Bit(saveBlock2PointerAddr)
-   local dexMask = (1 << (speciesDexNumber - 1) % 8)
+   local dexMask = (1 << (speciesDexNumber - 1) & 7)
    local dexIndex = (speciesDexNumber - 1) / 8
    local dexOwnedFlag = (read8Bit(saveBlock2Addr + 0x28 + dexIndex) & dexMask)
    local dexSeenFlag = (read8Bit(saveBlock2Addr + 0x5C + dexIndex) & dexMask)
@@ -1039,7 +1039,7 @@ function findSureCatch(seed, catchProbability, isSafariZone)
    seed = LCRNG(seed, 0x41C6, 0x4E6D, 0x6073)
   end
 
-  if isSafariZone and delay % 2 ~= 0 then
+  if isSafariZone and delay & 1 ~= 0 then
    ballShakes = 0
   end
 
@@ -1080,7 +1080,7 @@ function getDayCareInfo()
  local eggNatureIndex = eggPID % 25
  local eggStepsCounter = 255 - read8Bit(eggPIDAddr - 0x4)
  local eggFlagAddr = read32Bit(saveBlock1PointerAddr) + 0x1280
- local isEggReady = ((read8Bit(eggFlagAddr) >> 6) & 0x1) == 1
+ local isEggReady = ((read8Bit(eggFlagAddr) >> 6) & 1) == 1
 
  return isEggReady, eggStepsCounter, eggPID, eggShinyType, eggShinyTypeTextColor, eggNatureIndex, timer, calibration
 end
